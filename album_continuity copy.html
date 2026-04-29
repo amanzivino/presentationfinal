@@ -360,7 +360,7 @@ function deriveClipUrlFromBase(baseUrl, suffix) {
   }
 }
 
-// Cortex track clips for the motif matrix. Filenames the user can upload to /amanzivino/audio.
+// Cortex track clips. These also act as fallbacks while motif-cell clips are being uploaded.
 const CORTEX_CLIPS = {
   'La Rue':         BASE + 'cortex-la-rue.mp3',
   'Automne':        BASE + 'cortex-automne.mp3',
@@ -376,6 +376,39 @@ const CORTEX_CLIPS = {
   'Sabbat 3':       BASE + 'cortex-sabbat-3.mp3',
   'Madbass':        BASE + 'cortex-madbass.mp3',
 };
+
+// Motif-matrix cell clips. Upload files to /amanzivino/audio using:
+// cortex-motif-{motif-slug}-{track-slug}.mp3
+const MOTIF_SLUGS = {
+  'Electric piano figure': 'electric-piano-figure',
+  "Dalbray's vocal": 'dalbrays-vocal',
+  'Gandolfi snap drums': 'gandolfi-snap-drums',
+  'Grevet bass pocket': 'grevet-bass-pocket',
+  'Wistful / hazy mood': 'wistful-hazy-mood',
+  'Track-to-track bleed': 'track-to-track-bleed',
+};
+
+const CORTEX_TRACK_SLUGS = {
+  'La Rue': 'la-rue',
+  'Automne': 'automne',
+  "L'enfant Samba": 'lenfant-samba',
+  'Troupeau Bleu': 'troupeau-bleu',
+  'Prélude': 'prelude',
+  'Go Round': 'go-round',
+  'Chanson': 'chanson',
+  'Mary et Jeff': 'mary-et-jeff',
+  'Huit Octobre': 'huit-octobre',
+  'Sabbat 1': 'sabbat-1',
+  'Sabbat 2': 'sabbat-2',
+  'Sabbat 3': 'sabbat-3',
+  'Madbass': 'madbass',
+};
+
+function getMotifClipUrl(motifLabel, trackTitle) {
+  const motifSlug = MOTIF_SLUGS[motifLabel] || clipKey(motifLabel);
+  const trackSlug = CORTEX_TRACK_SLUGS[trackTitle] || clipKey(trackTitle);
+  return BASE + `cortex-motif-${motifSlug}-${trackSlug}.mp3`;
+}
 
 // Clips for the "Where This Sound Went" cards.
 const SAMPLE_CLIPS = {
@@ -940,17 +973,20 @@ function VoicemailLog({ playing, onToggle }) {
 function MotifMatrix({ playing, onToggle }) {
   const ch = (n) => n === 0 ? '·' : n === 1 ? '○' : n === 2 ? '◐' : '●';
   const staticDot = (n) => <span className={'mot-dot mot-'+n}>{ch(n)}</span>;
-  const cellDot = (n, track) => {
-    const url = CORTEX_CLIPS[track];
-    if (n < 1 || !url) return staticDot(n);
-    const key = 'cortex-' + track.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const cellDot = (n, motif, track) => {
+    const url = getMotifClipUrl(motif, track);
+    const fallbackUrl = CORTEX_CLIPS[track] || '';
+    if (!url) return staticDot(n);
+    const motifSlug = MOTIF_SLUGS[motif] || clipKey(motif);
+    const trackSlug = CORTEX_TRACK_SLUGS[track] || clipKey(track);
+    const key = 'cortex-motif-' + motifSlug + '-' + trackSlug;
     const isPlaying = playing === key;
     return (
       <button
         className={'mot-dot mot-' + n + ' mot-btn' + (isPlaying ? ' mot-playing' : '')}
-        onClick={() => onToggle(key, url)}
-        title={(isPlaying ? 'Pause ' : 'Play ') + '"' + track + '"'}
-        aria-label={(isPlaying ? 'Pause ' : 'Play ') + track}
+        onClick={() => onToggle(key, url, fallbackUrl)}
+        title={(isPlaying ? 'Pause ' : 'Play ') + motif + ' in ' + track}
+        aria-label={(isPlaying ? 'Pause ' : 'Play ') + motif + ' in ' + track}
       >
         {ch(n)}
       </button>
@@ -969,7 +1005,7 @@ function MotifMatrix({ playing, onToggle }) {
         <span className="mot-cta-icon">▶</span>
         <div>
           <span className="mot-cta-eye">Listening Booth</span>
-          <span className="mot-cta-text">Every blue circle is a play button — click any one to hear that Cortex track.</span>
+          <span className="mot-cta-text">Every matrix mark is a play button — click any one to hear that motif in that Cortex track.</span>
         </div>
       </div>
       <div className="motif-tablewrap">
@@ -984,7 +1020,7 @@ function MotifMatrix({ playing, onToggle }) {
             {MOTIFS.rows.map(r => (
               <tr key={r.lbl}>
                 <th scope="row">{r.lbl}</th>
-                {r.cells.map((c, i) => <td key={i}>{cellDot(c, MOTIFS.cols[i])}</td>)}
+                {r.cells.map((c, i) => <td key={i}>{cellDot(c, r.lbl, MOTIFS.cols[i])}</td>)}
               </tr>
             ))}
           </tbody>
@@ -1195,16 +1231,39 @@ function App() {
 
   const stopAll = () => {
     const a = audioRef.current;
-    if (a) { a.pause(); a.currentTime = 0; }
+    if (a) { a.onerror = null; a.pause(); a.currentTime = 0; }
     playingRef.current = '';
     setPlaying('');
   };
 
-  const onToggle = async (key, url) => {
+  const onToggle = async (key, url, fallbackUrl = '') => {
     if (!url || !audioRef.current) return;
     const a = audioRef.current;
-    if (playingRef.current === key) { a.pause(); setPlayingSync(''); return; }
-    try { a.pause(); a.src = url; await a.play(); setPlayingSync(key); } catch(e) { setPlayingSync(''); }
+    if (playingRef.current === key) { a.onerror = null; a.pause(); setPlayingSync(''); return; }
+    const sources = [url, fallbackUrl].filter((src, i, arr) => src && arr.indexOf(src) === i);
+    let sourceIdx = 0;
+    const playSource = async () => {
+      const src = sources[sourceIdx];
+      if (!src) { setPlayingSync(''); return; }
+      a.onerror = () => {
+        if (playingRef.current !== key) return;
+        sourceIdx += 1;
+        playSource();
+      };
+      try {
+        a.pause();
+        a.currentTime = 0;
+        a.src = src;
+        await a.play();
+        setPlayingSync(key);
+      } catch(e) {
+        sourceIdx += 1;
+        if (sourceIdx < sources.length) await playSource();
+        else setPlayingSync('');
+      }
+    };
+    setPlayingSync(key);
+    await playSource();
   };
 
   const goToPin = (i) => {
@@ -1544,6 +1603,11 @@ function App() {
               const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
               const all = STAGES.flatMap(s=>s.tracks);
               const t = all.find(t => clipKey(t.name)===playing); if (t) return t.name;
+              if (playing.startsWith('cortex-motif-')) {
+                const row = MOTIFS.rows.find(r => playing.startsWith('cortex-motif-' + (MOTIF_SLUGS[r.lbl] || slug(r.lbl)) + '-'));
+                const col = MOTIFS.cols.find(c => playing.endsWith('-' + (CORTEX_TRACK_SLUGS[c] || slug(c))));
+                if (row && col) return 'Cortex — ' + row.lbl + ' / ' + col;
+              }
               if (playing.startsWith('cortex-')) { const c = MOTIFS.cols.find(c => 'cortex-'+slug(c) === playing); if (c) return 'Cortex — '+c; }
               if (playing.startsWith('sample-')) { const s = SAMPLES.find(s => 'sample-'+slug(s.track) === playing); if (s) return s.artist+' — '+s.track; }
               if (playing.startsWith('history-')) { const h = TIMELINE.find(h => h.clipKey === playing); if (h) return h.work; }
