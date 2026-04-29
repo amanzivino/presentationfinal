@@ -781,17 +781,16 @@ function CortexRow({ track, playing, onToggle }) {
           <a className="cortex-name-link" href={track.url} target="_blank" rel="noopener" onClick={e => e.stopPropagation()}>{track.title}</a>
           <div className="cortex-role">{track.role}</div>
           <div className="cortex-short">{track.short}</div>
-        </div>
-        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
-          <div className="cortex-badge">{track.badge}</div>
           <button
             className={'lineage-clip' + (isPlaying ? ' playing' : '')}
             onClick={e => { e.stopPropagation(); onToggle(playKey, clipUrl); }}
             disabled={!clipUrl}
-            style={{marginTop:4,fontSize:'0.55em',padding:'4px 10px'}}
           >
-            {isPlaying ? '⏸ Pause' : '▶ Play'}
+            {clipUrl ? (isPlaying ? '⏸ Pause Clip' : '▶ Play Clip') : 'Clip URL Missing'}
           </button>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
+          <div className="cortex-badge">{track.badge}</div>
           <div className="track-toggle">{open?'−':'+'}</div>
         </div>
       </div>
