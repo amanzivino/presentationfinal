@@ -1471,6 +1471,7 @@ function App() {
 
   const scrollTo = id => { const el=document.getElementById(id); if(el) window.scrollTo({top:el.offsetTop-60,behavior:'smooth'}); };
   const playbackMeta = getPlaybackMeta(playing);
+  const showNowPlaying = playing && !playing.startsWith('cortex-motif-');
 
   return (
     <>
@@ -1671,7 +1672,7 @@ function App() {
       </section>
 
       <A11y />
-      {playing && (
+      {showNowPlaying && (
         <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',zIndex:9999,display:'flex',alignItems:'center',gap:12,background:playbackMeta.theme.bg,border:'1px solid '+playbackMeta.theme.border,borderRadius:6,padding:'8px 16px',backdropFilter:'blur(12px)',maxWidth:'90vw'}}>
           <div style={{width:6,height:6,borderRadius:'50%',background:playbackMeta.theme.accent,flexShrink:0,animation:'pulse 1.2s infinite'}} />
           <span style={{fontSize:'9px',letterSpacing:'0.18em',textTransform:'uppercase',color:playbackMeta.theme.label,fontFamily:'Space Grotesk,sans-serif',flexShrink:0}}>Now Playing</span>
