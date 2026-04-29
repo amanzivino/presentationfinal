@@ -18,7 +18,6 @@
       --text: #ede9e1; --muted: #7a7570; --faint: #2a2730; --rule: #1e1c22;
       --amber: oklch(0.68 0.15 40); --amberD: oklch(0.48 0.12 40);
       --blue: oklch(0.65 0.14 234); --blueD: oklch(0.42 0.11 234);
-      --green: #1db954;
       --lh: 1.72;
       --font-d: 'Cormorant Garamond', Georgia, serif;
       --font-u: 'Space Grotesk', system-ui, sans-serif;
@@ -68,8 +67,11 @@
     .sec-right { text-align: right; }
     .sec-label { font-size: 0.65em; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
     .sec-meta { font-family: var(--font-m); font-size: 0.75em; color: var(--muted); display: block; margin-bottom: 10px; }
-    .spotify-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--green); border: 1px solid rgba(29,185,84,0.35); padding: 5px 12px; transition: background 0.2s; }
-    .spotify-link:hover { background: rgba(29,185,84,0.1); }
+    .spotify-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7em; letter-spacing: 0.16em; text-transform: uppercase; padding: 5px 12px; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+    .spotify-link.a { color: var(--amber); border: 1px solid var(--amberD); }
+    .spotify-link.a:hover { background: rgba(192,120,48,0.1); }
+    .spotify-link.b { color: var(--blue); border: 1px solid var(--blueD); }
+    .spotify-link.b:hover { background: rgba(122,184,255,0.1); }
 
     .editorial { padding: 0 60px 80px; }
     .ed-intro { padding: 36px 0 32px; max-width: 560px; }
@@ -98,7 +100,7 @@
     .track-top:hover { background: var(--bg2); }
     .track-num { font-family: var(--font-m); font-size: 0.75em; color: var(--rule); padding-top: 5px; }
     .track-name-link { font-family: var(--font-d); font-size: 1.3125em; font-weight: 600; line-height: 1.15; color: var(--text); border-bottom: 1px solid transparent; transition: color 0.2s; }
-    .track-name-link:hover { color: var(--green); border-bottom-color: rgba(29,185,84,0.4); }
+    .track-name-link:hover { color: var(--amber); border-bottom-color: var(--amberD); }
     .track-short { font-size: 0.875em; line-height: 1.65; color: var(--muted); margin-top: 6px; }
     .track-badge { font-size: 0.6em; letter-spacing: 0.2em; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--amberD); color: var(--amber); white-space: nowrap; margin-top: 5px; }
     .track-toggle { font-size: 0.875em; color: var(--faint); align-self: center; flex-shrink: 0; }
@@ -117,6 +119,10 @@
     .map-chapter-sub { font-size: 0.7em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
     .map-wrap { position: relative; width: 100%; height: 68vh; }
     #compton-map { width: 100%; height: 100%; display: block; }
+    .map-pin-label { pointer-events: none; }
+    .map-pin-label-inner { width: 132px; padding: 6px 8px; background: rgba(9,8,11,0.9); border: 1px solid rgba(192,120,48,0.45); color: var(--text); font-family: var(--font-u); box-shadow: 0 8px 20px rgba(0,0,0,0.32); }
+    .map-pin-label-track { display: block; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amberD); margin-bottom: 2px; }
+    .map-pin-label-name { display: block; font-size: 10px; line-height: 1.25; color: oklch(0.78 0.08 40); }
     .loc-panel { background: #1a181d; border-top: 1px solid var(--rule); padding: 24px 40px; display: grid; grid-template-columns: 52px 1fr; gap: 20px; align-items: start; }
     .loc-n { font-family: var(--font-m); font-size: 1.75em; color: var(--amberD); line-height: 1; }
     .loc-name { font-family: var(--font-d); font-size: 1.25em; font-weight: 600; color: var(--amber); margin-bottom: 3px; }
@@ -133,7 +139,7 @@
     .cortex-top:hover { background: var(--bg2); }
     .cortex-num { font-family: var(--font-d); font-size: 1.875em; font-weight: 600; color: oklch(0.25 0.06 234); line-height: 1; }
     .cortex-name-link { font-family: var(--font-d); font-size: 1.3125em; font-style: italic; font-weight: 600; border-bottom: 1px solid transparent; transition: color 0.2s; }
-    .cortex-name-link:hover { color: var(--green); border-bottom-color: rgba(29,185,84,0.4); }
+    .cortex-name-link:hover { color: var(--blue); border-bottom-color: var(--blueD); }
     .cortex-role { font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blueD); margin-top: 4px; }
     .cortex-short { font-size: 0.875em; line-height: 1.65; color: var(--muted); margin-top: 8px; }
     .cortex-badge { font-size: 0.6em; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; border: 1px solid var(--blueD); color: var(--blue); white-space: nowrap; align-self: start; margin-top: 4px; }
@@ -473,11 +479,11 @@ const CORTEX = [
 ];
 
 const PINS = [
-  { id:'rosecrans', lat:33.9019, lng:-118.2655, name:'Rosecrans & Avalon', trackNum:1, trackSong:"Sherane a.k.a. Master Splinter's Daughter", body:"K.Dot drives the Caravan down Rosecrans toward Sherane's side of town. The drive that starts everything." },
-  { id:'gonzales', lat:33.9048, lng:-118.2390, name:'Gonzales Park', trackNum:4, trackSong:'The Art of Peer Pressure', body:"After the robbery, the homies drop K.Dot here so he can go see Sherane. Desire and danger sit on the same map." },
-  { id:'louis', lat:33.9042, lng:-118.2068, name:'Louis Burgers (Rosecrans & Builis)', trackNum:5, trackSong:'Money Trees', body:"Across from Lueders Park. The burger stand where Kendrick's Uncle Tony was killed — the loss right after the robbery win." },
-  { id:'dominguez', lat:33.8736, lng:-118.2443, name:'Sherane\'s Side (Paramount area)', trackNum:6, trackSong:'Poetic Justice', body:"K.Dot drives here for Sherane and walks straight into a setup. A love story turns into a trap." },
-  { id:'central', lat:33.8958, lng:-118.2245, name:'Central Compton', trackNum:8, trackSong:'m.A.A.d city', body:"The pressure point of the album: old beefs, gang lines, generations of violence stacked into a few square miles." },
+  { id:'rosecrans', lat:33.9019, lng:-118.2655, name:'Rosecrans & Avalon', mapLabel:'Rosecrans & Avalon', labelAnchor:[-10,18], trackNum:1, trackSong:"Sherane a.k.a. Master Splinter's Daughter", body:"K.Dot drives the Caravan down Rosecrans toward Sherane's side of town. The drive that starts everything." },
+  { id:'gonzales', lat:33.9048, lng:-118.2390, name:'Gonzales Park', mapLabel:'Gonzales Park', labelAnchor:[66,48], trackNum:4, trackSong:'The Art of Peer Pressure', body:"After the robbery, the homies drop K.Dot here so he can go see Sherane. Desire and danger sit on the same map." },
+  { id:'louis', lat:33.9042, lng:-118.2068, name:'Louis Burgers (Rosecrans & Builis)', mapLabel:'Louis Burgers', labelAnchor:[142,18], trackNum:5, trackSong:'Money Trees', body:"Across from Lueders Park. The burger stand where Kendrick's Uncle Tony was killed — the loss right after the robbery win." },
+  { id:'dominguez', lat:33.8736, lng:-118.2443, name:'Sherane\'s Side (Paramount area)', mapLabel:"Sherane's Side", labelAnchor:[66,-10], trackNum:6, trackSong:'Poetic Justice', body:"K.Dot drives here for Sherane and walks straight into a setup. A love story turns into a trap." },
+  { id:'central', lat:33.8958, lng:-118.2245, name:'Central Compton', mapLabel:'Central Compton', labelAnchor:[66,-10], trackNum:8, trackSong:'m.A.A.d city', body:"The pressure point of the album: old beefs, gang lines, generations of violence stacked into a few square miles." },
 ];
 
 const CHARS = [
@@ -958,7 +964,7 @@ const OVERLAY_STYLE = {
 const OBTN = { fontSize:'9px', letterSpacing:'0.18em', textTransform:'uppercase', padding:'8px 14px', background:'transparent', cursor:'pointer', fontFamily:'Space Grotesk,sans-serif', border:'none' };
 const ODIV = { width:1, height:14, background:'rgba(255,255,255,0.1)', flexShrink:0 };
 
-function MapView({ onPin, activeLoc, onReady, onMarkersReady, panelOpenRef }) {
+function MapView({ onPin, activeLoc, onReady, onMarkersReady, onLabelsReady, panelOpenRef }) {
   const mapRef = useRef(null);
   const darkRef = useRef(null);
   const satRef = useRef(null);
@@ -990,6 +996,7 @@ function MapView({ onPin, activeLoc, onReady, onMarkersReady, panelOpenRef }) {
               s.textContent = '.ctip{background:#09080b;border:1px solid #2a2730;box-shadow:none;padding:5px 10px;border-radius:0;color:#c07830;font-family:Space Grotesk,sans-serif;font-size:9px;letter-spacing:.14em;text-transform:uppercase}.ctip::before{display:none}.mpop{pointer-events:none}.mpop .leaflet-popup-content-wrapper{background:#09080b;border:1px solid #2a2730;border-radius:0;box-shadow:none;padding:0;z-index:9999}.mpop .leaflet-popup-content{margin:0;padding:12px 16px}.mpop .leaflet-popup-tip-container,.mpop .leaflet-popup-close-button{display:none}';
       document.head.appendChild(s);
       const markers = [];
+      const labels = [];
       PINS.forEach((pin) => {
         const m = L.circleMarker([pin.lat,pin.lng], { radius:6, fillColor:'#c07830', color:'#c07830', weight:1.5, opacity:1, fillOpacity:0.85 }).addTo(map);
         m.bindTooltip(pin.name+' · '+pin.trackSong, { className:'ctip', direction:'top', offset:[0,-10] });
@@ -1006,8 +1013,21 @@ function MapView({ onPin, activeLoc, onReady, onMarkersReady, panelOpenRef }) {
           onPin(pin);
         });
         markers.push(m);
+        const label = L.marker([pin.lat,pin.lng], {
+          interactive:false,
+          zIndexOffset:500,
+          icon:L.divIcon({
+            className:'map-pin-label',
+            iconSize:[132,34],
+            iconAnchor:pin.labelAnchor,
+            html:'<div class="map-pin-label-inner"><span class="map-pin-label-track">Track '+String(pin.trackNum).padStart(2,'0')+'</span><span class="map-pin-label-name">'+pin.mapLabel+'</span></div>',
+          }),
+        }).addTo(map);
+        label.setOpacity(0);
+        labels.push(label);
       });
       if (onMarkersReady) onMarkersReady(markers);
+      if (onLabelsReady) onLabelsReady(labels);
     }, 3200);
 
     return () => { map.remove(); mapRef.current = null; };
@@ -1257,6 +1277,7 @@ function App() {
   const audioRef    = useRef(null);
   const mapRef      = useRef(null);
   const markersRef  = useRef([]);
+  const labelsRef   = useRef([]);
   const mapWrapRef  = useRef(null);
   const scrollLocked = useRef(false);
   const pinIdxRef   = useRef(-1);
@@ -1281,13 +1302,12 @@ function App() {
   }, []);
 
   // One-gesture-one-slide snap for the first 3 sections (+ Side A as the destination edge).
-  // Gesture detection: every wheel event resets a 240ms idle timer. While the timer is
-  // armed (i.e., events are still arriving or just stopped), all subsequent wheel events
-  // are absorbed. This guarantees one trackpad flick — including its full inertia tail —
-  // produces exactly one slide move.
+  // Gesture detection: absorb the inertia tail from one trackpad flick, but release on
+  // a hard timer so the early slides never require a click before the next scroll.
   useEffect(() => {
     let gestureActive = false;
     let gestureTimer = null;
+    let gestureStarted = 0;
     let keyLastTime = 0;
     const SELECTORS = ['.hero.hero-narrow', '#history', '.albums-intro', '#side-a'];
     const getState = () => {
@@ -1301,17 +1321,26 @@ function App() {
       }
       return { tops, currentIdx, bestDist };
     };
+    const resetGesture = () => {
+      if (gestureTimer) clearTimeout(gestureTimer);
+      gestureActive = false;
+      gestureTimer = null;
+      gestureStarted = 0;
+    };
     const armIdle = () => {
       if (gestureTimer) clearTimeout(gestureTimer);
-      gestureTimer = setTimeout(() => { gestureActive = false; gestureTimer = null; }, 240);
+      gestureTimer = setTimeout(resetGesture, 240);
     };
     const onWheel = (e) => {
       // While a gesture is in flight (initial scroll + inertia tail), eat everything
-      // and keep the idle timer pushed forward.
+      // briefly, then release even if the browser keeps sending tiny wheel events.
       if (gestureActive) {
-        e.preventDefault();
-        armIdle();
-        return;
+        if (Date.now() - gestureStarted < 850) {
+          e.preventDefault();
+          armIdle();
+          return;
+        }
+        resetGesture();
       }
       const s = getState();
       if (!s || s.bestDist > 140) return;
@@ -1321,6 +1350,7 @@ function App() {
       e.preventDefault();
       window.scrollTo({ top: s.tops[nextIdx], behavior: 'smooth' });
       gestureActive = true;
+      gestureStarted = Date.now();
       armIdle();
     };
     const onKey = (e) => {
@@ -1345,7 +1375,7 @@ function App() {
     return () => {
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('keydown', onKey);
-      if (gestureTimer) clearTimeout(gestureTimer);
+      resetGesture();
     };
   }, []);
 
@@ -1386,11 +1416,16 @@ function App() {
     await playSource();
   };
 
+  const setMapLabelsVisible = (visible) => {
+    labelsRef.current.forEach(label => label.setOpacity(visible ? 1 : 0));
+  };
+
   const goToPin = (i) => {
     const pin = PINS[i];
     pinIdxRef.current = i;
     setPinIdx(i);
     setLocPanel(pin);
+    setMapLabelsVisible(false);
     const map = mapRef.current;
     if (!map) return;
     map.closePopup();
@@ -1407,12 +1442,14 @@ function App() {
     pinIdxRef.current = PINS.length;
     setPinIdx(PINS.length);
     setLocPanel({ overview: true });
+    setMapLabelsVisible(false);
     const map = mapRef.current;
     if (!map) return;
     map.closePopup();
     markersRef.current.forEach(m => { m.closePopup(); m.setStyle({ opacity:1, fillOpacity:0.85 }); });
     const bounds = L.latLngBounds(PINS.map(p => [p.lat, p.lng]));
     map.flyToBounds(bounds, { duration:1.6, easeLinearity:0.25, padding:[60,60] });
+    map.once('moveend', () => setMapLabelsVisible(true));
   };
 
   useEffect(() => {
@@ -1473,6 +1510,7 @@ function App() {
       // Reset once the user has fully passed the map after completion.
       if (completed && rect.bottom < 0) {
         completed = false; animating = false;
+        setMapLabelsVisible(false);
         setPinIdx(-1); pinIdxRef.current = -1; setLocPanel(null);
       }
     };
@@ -1516,6 +1554,7 @@ function App() {
   const scrollTo = id => { const el=document.getElementById(id); if(el) window.scrollTo({top:el.offsetTop-60,behavior:'smooth'}); };
   const playbackMeta = getPlaybackMeta(playing);
   const showNowPlaying = playing && !playing.startsWith('cortex-motif-');
+  const mapCounterLabel = pinIdx === PINS.length ? 'All 5' : (pinIdx >= 0 ? (pinIdx + 1) + ' / ' + PINS.length : '— / ' + PINS.length);
 
   return (
     <>
@@ -1558,7 +1597,7 @@ function App() {
           <div className="sec-right">
             <span className="sec-label">Side A · Story Continuity</span>
             <span className="sec-meta">Kendrick Lamar · Compton, CA · 2012</span>
-            <a className="spotify-link" href="https://open.spotify.com/album/6PBZN8cbwkqm1ERj2BGXJ1" target="_blank" rel="noopener">♫ Full Album</a>
+            <a className="spotify-link a" href="https://open.spotify.com/album/6PBZN8cbwkqm1ERj2BGXJ1" target="_blank" rel="noopener">♫ Full Album</a>
           </div>
         </div>
         <div className="editorial">
@@ -1599,7 +1638,7 @@ function App() {
           <VoicemailLog playing={playing} onToggle={onToggle} />
 
           <div className="map-chapter">
-            <button className="map-chapter-head map-chapter-toggle" onClick={() => { setAtlasOpen(o => !o); if (atlasOpen) { setLocPanel(null); setPinIdx(-1); } }}>
+            <button className="map-chapter-head map-chapter-toggle" onClick={() => { setAtlasOpen(o => !o); if (atlasOpen) { setLocPanel(null); setPinIdx(-1); pinIdxRef.current = -1; setMapLabelsVisible(false); } }}>
               <div>
                 <div className="map-chapter-title">Compton Atlas</div>
                 <div className="map-chapter-sub">Geography Behind The Story</div>
@@ -1610,16 +1649,17 @@ function App() {
               <>
                 <div ref={mapWrapRef} style={{position:'relative'}}>
                   <MapView
-                    onPin={pin => { setLocPanel(pin); setPinIdx(PINS.findIndex(p=>p.id===pin.id)); }}
+                    onPin={pin => { setMapLabelsVisible(false); setLocPanel(pin); setPinIdx(PINS.findIndex(p=>p.id===pin.id)); }}
                     activeLoc={locPanel}
                     onReady={m => { mapRef.current = m; }}
                     onMarkersReady={m => { markersRef.current = m; }}
+                    onLabelsReady={m => { labelsRef.current = m; }}
                     panelOpenRef={panelOpenRef}
                   />
                   <div style={{...OVERLAY_STYLE, bottom:28, left:'50%', transform:'translateX(-50%)'}}>
                     <button style={{...OBTN,color:'rgba(255,255,255,0.5)'}} onClick={() => goToPin(pinIdx<=0?PINS.length-1:pinIdx-1)}>← Back</button>
                     <div style={ODIV} />
-                    <span style={{fontFamily:'DM Mono,monospace',fontSize:'9px',color:'rgba(255,255,255,0.3)',minWidth:36,textAlign:'center',padding:'0 4px'}}>{pinIdx>=0?(pinIdx+1)+' / '+PINS.length:'— / '+PINS.length}</span>
+                    <span style={{fontFamily:'DM Mono,monospace',fontSize:'9px',color:'rgba(255,255,255,0.3)',minWidth:46,textAlign:'center',padding:'0 4px'}}>{mapCounterLabel}</span>
                     <div style={ODIV} />
                     <button style={{...OBTN,color:'rgba(255,255,255,0.5)'}} onClick={() => goToPin(pinIdx>=PINS.length-1||pinIdx===-1?0:pinIdx+1)}>Next →</button>
                   </div>
@@ -1632,7 +1672,7 @@ function App() {
                         <div className="loc-name">All Five Locations</div>
                         <div className="loc-track">The full geography of one day</div>
                         <div className="loc-body">Rosecrans → Gonzales Park → Louis Burgers → Sherane's side → Central Compton. The drive that started chasing a girl ends with a city. Five points, one day, one album.</div>
-                        <button style={{marginTop:12,fontSize:'0.65em',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--muted)',background:'none',border:'none',fontFamily:'var(--font-u)',cursor:'pointer'}} onClick={() => { setLocPanel(null); setPinIdx(-1); pinIdxRef.current = -1; }}>Close ×</button>
+                        <button style={{marginTop:12,fontSize:'0.65em',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--muted)',background:'none',border:'none',fontFamily:'var(--font-u)',cursor:'pointer'}} onClick={() => { setMapLabelsVisible(false); setLocPanel(null); setPinIdx(-1); pinIdxRef.current = -1; }}>Close ×</button>
                       </div>
                     </div>
                   ) : (
@@ -1642,7 +1682,7 @@ function App() {
                         <div className="loc-name">{locPanel.name}</div>
                         <div className="loc-track">Track {String(locPanel.trackNum).padStart(2,'0')} — {locPanel.trackSong}</div>
                         <div className="loc-body">{locPanel.body}</div>
-                        <button style={{marginTop:12,fontSize:'0.65em',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--muted)',background:'none',border:'none',fontFamily:'var(--font-u)',cursor:'pointer'}} onClick={() => { setLocPanel(null); setPinIdx(-1); }}>Close ×</button>
+                        <button style={{marginTop:12,fontSize:'0.65em',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--muted)',background:'none',border:'none',fontFamily:'var(--font-u)',cursor:'pointer'}} onClick={() => { setMapLabelsVisible(false); setLocPanel(null); setPinIdx(-1); pinIdxRef.current = -1; }}>Close ×</button>
                       </div>
                     </div>
                   )
@@ -1661,7 +1701,7 @@ function App() {
           <div className="sec-right">
             <span className="sec-label">Side B · Sound Continuity</span>
             <span className="sec-meta">Cortex · Paris · 1975</span>
-            <a className="spotify-link" href="https://open.spotify.com/album/74DOWHisu2jlFvPid9YTGB" target="_blank" rel="noopener">♫ Find on Spotify</a>
+            <a className="spotify-link b" href="https://open.spotify.com/album/74DOWHisu2jlFvPid9YTGB" target="_blank" rel="noopener">♫ Find on Spotify</a>
           </div>
         </div>
         <div className="framework">
