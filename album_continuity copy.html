@@ -331,8 +331,34 @@ const { useState, useEffect, useRef } = React;
 const BASE = 'https://raw.githubusercontent.com/amanzivino/audio/main/';
 const CLIPS = {
   'sherane-a-k-a-master-splinter-s-daughter': BASE + 'Sherane%20a.k.a%20Master%20Splinters%20Daughter.mp3',
+  'bitch-don-t-kill-my-vibe':                 BASE + 'kendrick-bitch-dont-kill-my-vibe.mp3',
+  'backseat-freestyle':                       BASE + 'kendrick-backseat-freestyle.mp3',
+  'the-art-of-peer-pressure':                 BASE + 'kendrick-art-of-peer-pressure.mp3',
+  'money-trees':                              BASE + 'kendrick-money-trees.mp3',
+  'poetic-justice':                           BASE + 'kendrick-poetic-justice.mp3',
+  'good-kid':                                 BASE + 'kendrick-good-kid.mp3',
+  'm-a-a-d-city':                             BASE + 'kendrick-maad-city.mp3',
+  'swimming-pools-drank':                     BASE + 'kendrick-swimming-pools.mp3',
+  'sing-about-me-i-m-dying-of-thirst':        BASE + 'kendrick-sing-about-me.mp3',
+  'real':                                     BASE + 'kendrick-real.mp3',
+  'compton':                                  BASE + 'kendrick-compton.mp3',
 };
 const clipKey = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+// Given an existing `BASE + *.mp3` URL, derive a new filename with a deterministic suffix.
+// Example: kendrick-real.mp3 -> kendrick-real-excerpt-1.mp3
+function deriveClipUrlFromBase(baseUrl, suffix) {
+  if (!baseUrl) return '';
+  try {
+    const last = baseUrl.split('/').pop(); // encoded filename
+    const decoded = decodeURIComponent(last);
+    const withoutExt = decoded.replace(/\.mp3$/i,'');
+    const nextName = `${withoutExt}-${suffix}.mp3`;
+    return BASE + encodeURIComponent(nextName);
+  } catch (e) {
+    return '';
+  }
+}
 
 // Cortex track clips for the motif matrix. Filenames the user can upload to /amanzivino/audio.
 const CORTEX_CLIPS = {
@@ -355,30 +381,40 @@ const SAMPLE_CLIPS = {
 
 const STAGES = [
   { id:'lust', label:'LUST', tracks:[
-    { num:1, name:"Sherane a.k.a. Master Splinter's Daughter", url:'https://open.spotify.com/track/7zdORPbuIBkZHCJXl9J2e5', short:"K.Dot swipes his mom's keys and drives down Rosecrans to see a girl he met at a party. He knows her family runs with gangs. He goes anyway.", lyrics:"...Family history of gangbangin' did make me skeptical\nBut not enough to stop me from gettin' a nut\n\nSo now I'm down Rosecrans in a Caravan\n\n...I pulled up, a smile on my face, and then I see\nTwo niggas, two black hoodies, I froze as my phone rang...", analysis:"The whole album starts here — one impulsive decision to chase a girl. When K.Dot pulls up and sees two strangers in black hoodies, his phone starts ringing with his mom's voicemail. He doesn't pick up. That unanswered call is the first thread that ties the whole story together." },
-    { num:2, name:"Bitch, Don't Kill My Vibe", url:'https://open.spotify.com/track/4Pwjz3DfvfQWV0rO2V8jyh', short:"K.Dot tries to hold onto himself against all the outside noise.", lyrics:"...I am a sinner who's probably gonna sin again\nLord forgive me\n\n...You can see that my city found me\nThen put me on stages...", analysis:"This is K.Dot pumping the brakes before everything accelerates. He knows who he is. He knows he's going to mess up again anyway." },
-    { num:3, name:"Backseat Freestyle", url:'https://open.spotify.com/track/6fAyRZ0GHuuvSOEIOwi58N', short:"A flashback to being 16 with no cares — money, power, Compton.", lyrics:"...All my life I want money and power\nRespect my mind or die from lead shower\n\n...C-O-M-P-T-O-N, my city, mobbin' in the street...", analysis:"This isn't present-day Kendrick. It's a memory — the reckless teenage version of him. Compton doesn't just shape him; it defines him." },
+    { num:1, name:"Sherane a.k.a. Master Splinter's Daughter", url:'https://open.spotify.com/track/7zdORPbuIBkZHCJXl9J2e5', short:"K.Dot swipes his mom's keys and drives down Rosecrans to see a girl he met at a party. He knows her family runs with gangs. He goes anyway.", lyrics:"Family history of gangbangin' did make me skeptical\nBut not enough to stop me from gettin' a nut\n\nSo now I'm down Rosecrans in a Caravan\n\nI pulled up, a smile on my face, and then I see\nTwo niggas, two black hoodies, I froze as my phone rang", analysis:"The whole album starts here — one impulsive decision to chase a girl. When K.Dot pulls up and sees two strangers in black hoodies, his phone starts ringing with his mom's voicemail. He doesn't pick up. That unanswered call is the first thread that ties the whole story together." },
+    { num:2, name:"Bitch, Don't Kill My Vibe", url:'https://open.spotify.com/track/4Pwjz3DfvfQWV0rO2V8jyh', short:"K.Dot tries to hold onto himself against all the outside noise.", lyrics:"I am a sinner who's probably gonna sin again\nLord forgive me\n\nYou can see that my city found me\nThen put me on stages", analysis:"This is K.Dot pumping the brakes before everything accelerates. He knows who he is. He knows he's going to mess up again anyway." },
+    { num:3, name:"Backseat Freestyle", url:'https://open.spotify.com/track/6fAyRZ0GHuuvSOEIOwi58N', short:"A flashback to being 16 with no cares — money, power, Compton.", lyrics:"All my life I want money and power\nRespect my mind or die from lead shower\n\nC-O-M-P-T-O-N, my city, mobbin' in the street", analysis:"This isn't present-day Kendrick. It's a memory — the reckless teenage version of him. Compton doesn't just shape him; it defines him." },
   ]},
   { id:'crime', label:'CRIME', tracks:[
-    { num:4, name:"The Art of Peer Pressure", url:'https://open.spotify.com/track/2PieESXphabz5AkALFS08X', short:"Four deep in a white Toyota, robbing a house. K.Dot doesn't usually do this. But tonight he's with the homies.", lyrics:"...Usually I'm drug-free, but, shit, I'm with the homies\n\nMe and my niggas four deep in a white Toyota\nA quarter tank of gas, one pistol, an orange soda\n\n...Drop K. Dot off at his mama van at the park\n'Cause I know he tryna fuck on Sherane tonight...", analysis:"The plan loops back to Sherane — they'll drop K.Dot off at the park for her after the job. Lust and crime are running on the same track." },
-    { num:5, name:"Money Trees", url:'https://open.spotify.com/track/2HbKqm4o0w5wEeEFXm2sD4', short:"The robbery paid off. Then almost immediately: Uncle Tony gets shot at Louis Burgers.", lyrics:"...Home invasion was persuasive\nFrom nine-to-five I know it's vacant\n\n...Two bullets in my Uncle Tony head\n\n...Everybody gon' respect the shooter\nBut the one in front of the gun lives forever...", analysis:"The city gives you one thing and takes away another in the same breath. You can't win here, you can only survive." },
+    { num:4, name:"The Art of Peer Pressure", url:'https://open.spotify.com/track/2PieESXphabz5AkALFS08X', short:"Four deep in a white Toyota, robbing a house. K.Dot doesn't usually do this. But tonight he's with the homies.", lyrics:"Usually I'm drug-free, but, shit, I'm with the homies\n\nMe and my niggas four deep in a white Toyota\nA quarter tank of gas, one pistol, an orange soda\n\nDrop K. Dot off at his mama van at the park\n'Cause I know he tryna fuck on Sherane tonight", analysis:"The plan loops back to Sherane — they'll drop K.Dot off at the park for her after the job. Lust and crime are running on the same track." },
+    { num:5, name:"Money Trees", url:'https://open.spotify.com/track/2HbKqm4o0w5wEeEFXm2sD4', short:"The robbery paid off. Then almost immediately: Uncle Tony gets shot at Louis Burgers.", lyrics:"Home invasion was persuasive\nFrom nine-to-five I know it's vacant\n\nTwo bullets in my Uncle Tony head\n\nEverybody gon' respect the shooter\nBut the one in front of the gun lives forever", analysis:"The city gives you one thing and takes away another in the same breath. You can't win here, you can only survive." },
   ]},
   { id:'violence', label:'VIOLENCE', tracks:[
-    { num:6, name:"Poetic Justice", url:'https://open.spotify.com/track/1zCi4cVFqe6ja16MeGZKRN', short:"The Sherane situation was a setup. Her guys jump K.Dot.", lyrics:"...Ayy, you out here for Sherane, homie?\nI don't care who this nigga over here for\nIf he don't tell me where he from, it's a wrap!\n\nGet out the car 'fore I snatch you out that motherfucker...", analysis:"The romance was never just romance. Sherane's neighborhood, her whole world — K.Dot drove straight into all of it." },
-    { num:7, name:"good kid", url:'https://open.spotify.com/track/3903Tbix9PdoculpJLikHf', short:"After the beating, K.Dot walks home from Bible study. Gangs come. Then police.", lyrics:"...No better picture to paint than me walkin' from Bible study\n...And called his homies because he had said he noticed my face\n\nWhat am I 'posed to do when the topic is red or blue\nAnd you understand that I ain't?...", analysis:"This track has no profanity — and that's the whole point. He is literally a good kid. The city doesn't care." },
+    { num:6, name:"Poetic Justice", url:'https://open.spotify.com/track/1zCi4cVFqe6ja16MeGZKRN', short:"The Sherane situation was a setup. Her guys jump K.Dot.", lyrics:"Ayy, you out here for Sherane, homie?\nI don't care who this nigga over here for\nIf he don't tell me where he from, it's a wrap!\n\nGet out the car 'fore I snatch you out that motherfucker", analysis:"The romance was never just romance. Sherane's neighborhood, her whole world — K.Dot drove straight into all of it." },
+    { num:7, name:"good kid", url:'https://open.spotify.com/track/3903Tbix9PdoculpJLikHf', short:"After the beating, K.Dot walks home from Bible study. Gangs come. Then police.", lyrics:"No better picture to paint than me walkin' from Bible study\n\nAnd called his homies because he had said he noticed my face\n\nWhat am I 'posed to do when the topic is red or blue\nAnd you understand that I ain't?", analysis:"This track has no profanity — and that's the whole point. He is literally a good kid. The city doesn't care." },
   ]},
   { id:'death', label:'DEATH', tracks:[
-    { num:8, name:"m.A.A.d city", url:'https://open.spotify.com/track/439TlnnznSiBbQbgXiBqAd', short:"Compton's violence goes back generations. A laced blunt almost kills him.", lyrics:"...Man down, where you from, nigga?\nFuck who you know, where you from, my nigga?\n\n...You killed my cousin back in '94, fuck your truce\n\n...Cocaine laced in marijuana\nAnd they wonder why I rarely smoke now\nImagine if your first blunt had you foaming at the mouth...", analysis:'The "where you from" chant echoes from the previous track — violence with no memory, looping forever.' },
-    { num:9, name:"Swimming Pools (Drank)", url:'https://open.spotify.com/track/3DFjTEueCBYqg7YE05eUJP', short:"Drinking with the crew to drown it all out. Then the skit hits: Dave is dead.", lyrics:"...Nigga, why you babysittin' only two or three shots?\nI'ma show you how to turn it up a notch\n\n...Okay, now open your mind up and listen me, Kendrick\nI'm your conscience\n\n...D-, say somethin', D-?\nThese bitch ass niggas killed my brother...", analysis:"What sounds like a club song is actually two voices at war — one pulling him deeper in, one begging him to stop." },
+    { num:8, name:"m.A.A.d city", url:'https://open.spotify.com/track/439TlnnznSiBbQbgXiBqAd', short:"Compton's violence goes back generations. A laced blunt almost kills him.", lyrics:"Man down, where you from, nigga?\nFuck who you know, where you from, my nigga?\n\nYou killed my cousin back in '94, fuck your truce\n\nCocaine laced in marijuana\nAnd they wonder why I rarely smoke now\nImagine if your first blunt had you foaming at the mouth", analysis:'The "where you from" chant echoes from the previous track — violence with no memory, looping forever.' },
+    { num:9, name:"Swimming Pools (Drank)", url:'https://open.spotify.com/track/3DFjTEueCBYqg7YE05eUJP', short:"Drinking with the crew to drown it all out. Then the skit hits: Dave is dead.", lyrics:"Nigga, why you babysittin' only two or three shots?\nI'ma show you how to turn it up a notch\n\nOkay, now open your mind up and listen me, Kendrick\nI'm your conscience\n\nD-, say somethin', D-?\nThese bitch ass niggas killed my brother", analysis:"What sounds like a club song is actually two voices at war — one pulling him deeper in, one begging him to stop." },
   ]},
   { id:'reflection', label:'REFLECTION', tracks:[
-    { num:10, name:"Sing About Me, I'm Dying of Thirst", url:'https://open.spotify.com/track/0sd6BRTa0O96tfEbFGhJF9', short:"Three voices reckon with death and meaning.", lyrics:"...Lord God, I come to you a sinner\nAnd I humbly repent for my sins\n\n...If I die before your album drops,\nI hope you sing about me...", analysis:"The opening prayer on Track 1 returns here, word for word. The whole album is the space between those two identical prayers." },
+    { num:10, name:"Sing About Me, I'm Dying of Thirst", url:'https://open.spotify.com/track/0sd6BRTa0O96tfEbFGhJF9', short:"Three voices reckon with death and meaning.", lyrics:"Lord God, I come to you a sinner\nAnd I humbly repent for my sins\n\nIf I die before your album drops,\nI hope you sing about me", analysis:"The opening prayer on Track 1 returns here, word for word. The whole album is the space between those two identical prayers." },
   ]},
   { id:'resolution', label:'RESOLUTION', tracks:[
-    { num:11, name:"Real", url:'https://open.spotify.com/track/7pdCmGogZHZH3Xv7LnqVrH', short:"What does it mean to be real? His dad's voicemail has the answer.", lyrics:"...What love got to do with it when you don't love yourself?\n\n...Real is responsibility\nReal is God...", analysis:'His dad strips the word "real" down to something the street would never say: love yourself, take responsibility, believe in something.' },
-    { num:12, name:"Compton", url:'https://open.spotify.com/track/6q0zsagVIiAn9zb7vqTmZi', short:'"Mom, I\'m finna use the van real quick." The same van. He made it.', lyrics:"...Mom, I'm finna use the van real quick\n\n...Compton, ain't no city quite like mine...", analysis:"The van from Track 1 comes back on the final track. Full circle. Dr. Dre blesses the ascent." },
+    { num:11, name:"Real", url:'https://open.spotify.com/track/7pdCmGogZHZH3Xv7LnqVrH', short:"What does it mean to be real? His dad's voicemail has the answer.", lyrics:"What love got to do with it when you don't love yourself?\n\nReal is responsibility\nReal is God", analysis:'His dad strips the word "real" down to something the street would never say: love yourself, take responsibility, believe in something.' },
+    { num:12, name:"Compton", url:'https://open.spotify.com/track/6q0zsagVIiAn9zb7vqTmZi', short:'"Mom, I\'m finna use the van real quick." The same van. He made it.', lyrics:"Mom, I'm finna use the van real quick\n\nCompton, ain't no city quite like mine", analysis:"The van from Track 1 comes back on the final track. Full circle. Dr. Dre blesses the ascent." },
   ]},
 ];
+
+function getTrackClipUrlByNum(trackNum) {
+  for (const stage of STAGES) {
+    const t = stage.tracks.find(x => x.num === trackNum);
+    if (!t) continue;
+    const key = clipKey(t.name);
+    return CLIPS[key] || '';
+  }
+  return '';
+}
 
 const CORTEX = [
   { num:1, title:'La Rue', url:'https://open.spotify.com/track/6lzDycd60SJ7H8y6wuESGl', role:'Where it begins', badge:'Palette', short:"The album announces itself in the first minute. Bass, drums, electric piano, and Mireille Dalbray's voice floating above it all.", full:"Jean Grevet's bass line locks in. Alain Gandolfi's drums snap and sputter. In four minutes, Cortex tells you everything you need to know about what this record is going to feel like." },
@@ -610,7 +646,9 @@ function Nav() {
   const [stuck, setStuck] = useState(false);
   const [active, setActive] = useState('');
   useEffect(() => {
-    const fn = () => {
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
       setStuck(window.scrollY > 60);
       for (const id of ['bridge','side-b','side-a','history']) {
         const el = document.getElementById(id);
@@ -618,8 +656,9 @@ function Nav() {
       }
       setActive('');
     };
-    window.addEventListener('scroll', fn);
-    return () => window.removeEventListener('scroll', fn);
+    const fn = () => { if (!raf) raf = requestAnimationFrame(compute); };
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => { window.removeEventListener('scroll', fn); if (raf) cancelAnimationFrame(raf); };
   }, []);
   const go = id => { const el = document.getElementById(id); if (el) window.scrollTo({top:el.offsetTop-60,behavior:'smooth'}); };
   const labels = { 'history':'History', 'side-a':'Side A', 'side-b':'Side B', 'bridge':'Bridge' };
@@ -676,8 +715,8 @@ function A11y() {
 function TrackRow({ track, badge, playing, onToggle }) {
   const [open, setOpen] = useState(false);
   const key = clipKey(track.name);
-  const url = CLIPS[key] || '';
-  const isPlaying = playing === key;
+  const trackUrl = CLIPS[key] || '';
+  const excerpts = String(track.lyrics).split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
   return (
     <div className="track-item">
       <div className="track-top" onClick={() => setOpen(o => !o)}>
@@ -693,10 +732,23 @@ function TrackRow({ track, badge, playing, onToggle }) {
       </div>
       {open && (
         <div className="track-expand">
-          <button className={'clip-btn'+(isPlaying?' playing':'')} onClick={() => onToggle(key,url)} disabled={!url}>
-            {url?(isPlaying?'Pause Clip':'Play Clip'):'Clip URL Missing'}
-          </button>
-          <div className="lyric-quote"><div className="lyric-text">{renderAnnotated(track.lyrics, ANNOTATIONS[track.name])}</div></div>
+          {excerpts.map((excerpt, idx) => {
+            const excerptKey = `${key}-excerpt-${idx}`;
+            const isPlaying = playing === excerptKey;
+            const excerptUrl = trackUrl ? deriveClipUrlFromBase(trackUrl, `excerpt-${idx}`) : '';
+            return (
+              <div className="lyric-quote" key={excerptKey}>
+                <button
+                  className={'clip-btn'+(isPlaying?' playing':'')}
+                  onClick={() => onToggle(excerptKey, excerptUrl)}
+                  disabled={!excerptUrl}
+                >
+                  {excerptUrl?(isPlaying?'Pause Excerpt':'Play Excerpt'):'Clip URL Missing'}
+                </button>
+                <div className="lyric-text">{renderAnnotated(excerpt, ANNOTATIONS[track.name])}</div>
+              </div>
+            );
+          })}
           <div className="track-analysis">{track.analysis}</div>
         </div>
       )}
@@ -808,7 +860,7 @@ function MapView({ onPin, activeLoc, onReady, onMarkersReady, panelOpenRef }) {
   );
 }
 
-function VoicemailLog() {
+function VoicemailLog({ playing, onToggle }) {
   const [open, setOpen] = useState(true);
   return (
     <div className="vm-section">
@@ -828,19 +880,34 @@ function VoicemailLog() {
               <span>9 / 9</span>
             </div>
             <div className="vm-disclaimer"><b>Note</b>The album doesn't include clock times — these are my best guess based on how the day flows.</div>
-            {VOICEMAILS.map(v => (
-              <div key={v.num} className="vm-row">
-                <div className="vm-meta">
-                  <div className="vm-time">{v.time}</div>
-                  <div className="vm-dir">{v.dir}</div>
+            {VOICEMAILS.map(v => {
+              const vmKey = `vm-${v.num}`;
+              const baseClipUrl = getTrackClipUrlByNum(v.track);
+              const fromSlug = clipKey(v.from);
+              const vmUrl = baseClipUrl ? deriveClipUrlFromBase(baseClipUrl, `voicemail-${v.num}-${fromSlug}`) : '';
+              const isPlaying = playing === vmKey;
+              return (
+                <div key={v.num} className="vm-row">
+                  <div className="vm-meta">
+                    <div className="vm-time">{v.time}</div>
+                    <div className="vm-dir">{v.dir}</div>
+                    <button
+                      className={'clip-btn'+(isPlaying?' playing':'')}
+                      onClick={() => onToggle(vmKey, vmUrl)}
+                      disabled={!vmUrl}
+                      style={{ width: '100%' }}
+                    >
+                      {vmUrl ? (isPlaying ? 'Pause Voicemail' : 'Play Voicemail') : 'Voicemail Clip URL Missing'}
+                    </button>
+                  </div>
+                  <div>
+                    <div className="vm-from">{v.from}</div>
+                    <div className="vm-text">"{v.text}"</div>
+                    <div className="vm-note"><span className="vm-note-track">Track {String(v.track).padStart(2,'0')}</span> — {v.song} · {v.note}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="vm-from">{v.from}</div>
-                  <div className="vm-text">"{v.text}"</div>
-                  <div className="vm-note"><span className="vm-note-track">Track {String(v.track).padStart(2,'0')}</span> — {v.song} · {v.note}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -1024,7 +1091,13 @@ function App() {
 
   useEffect(() => {
     audioRef.current = new Audio();
-    const onEnd = () => setPlayingSync('');
+    const onEnd = () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      setPlayingSync('');
+    };
     audioRef.current.addEventListener('ended', onEnd);
     return () => { audioRef.current.pause(); audioRef.current.removeEventListener('ended', onEnd); };
   }, []);
@@ -1320,7 +1393,7 @@ function App() {
             </div>
           ))}
 
-          <VoicemailLog />
+          <VoicemailLog playing={playing} onToggle={onToggle} />
 
           <div className="map-chapter">
             <button className="map-chapter-head map-chapter-toggle" onClick={() => { setAtlasOpen(o => !o); if (atlasOpen) { setLocPanel(null); setPinIdx(-1); } }}>
