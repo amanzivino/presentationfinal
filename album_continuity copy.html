@@ -246,7 +246,8 @@
     .motif-legend { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 16px; font-size: 0.72em; letter-spacing: 0.05em; color: var(--muted); }
     .motif-legend > span { display: flex; align-items: center; gap: 8px; }
     .mot-btn { background: transparent; border: none; cursor: pointer; padding: 6px 10px; font-family: inherit; line-height: 1; font-size: 1.4em; transition: transform 0.15s, background 0.15s; border-radius: 50%; }
-    .mot-btn:hover { transform: scale(1.25); background: rgba(122,184,255,0.1); }
+    .mot-btn:not(.mot-0):hover { transform: scale(1.25); background: rgba(122,184,255,0.1); }
+    .mot-btn.mot-0:hover { transform: none; background: transparent; }
     .mot-btn.mot-playing { background: rgba(122,184,255,0.18); animation: motPulse 1.6s infinite; }
     @keyframes motPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(122,184,255,0.5); } 50% { box-shadow: 0 0 0 6px rgba(122,184,255,0); } }
     .mot-cta { display: flex; align-items: center; gap: 18px; padding: 16px 22px; margin: 6px 0 22px; border: 1px solid var(--blueD); background: linear-gradient(90deg, rgba(122,184,255,0.10), rgba(122,184,255,0.02)); }
@@ -1048,6 +1049,7 @@ function MotifMatrix({ playing, onToggle }) {
   const ch = (n) => n === 0 ? '·' : n === 1 ? '○' : n === 2 ? '◐' : '●';
   const staticDot = (n) => <span className={'mot-dot mot-'+n}>{ch(n)}</span>;
   const cellDot = (n, motif, track) => {
+    if (n < 1) return staticDot(n);
     const url = getMotifClipUrl(motif, track);
     const fallbackUrl = CORTEX_CLIPS[track] || '';
     if (!url) return staticDot(n);
@@ -1079,7 +1081,7 @@ function MotifMatrix({ playing, onToggle }) {
         <span className="mot-cta-icon">▶</span>
         <div>
           <span className="mot-cta-eye">Listening Booth</span>
-          <span className="mot-cta-text">Every matrix mark is a play button — click any one to hear that motif in that Cortex track.</span>
+          <span className="mot-cta-text">Every active matrix mark is a play button — click any one to hear that motif in that Cortex track.</span>
         </div>
       </div>
       <div className="motif-tablewrap">
