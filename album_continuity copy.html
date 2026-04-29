@@ -275,32 +275,32 @@
     .history-node-icon { font-size: 1.5em; line-height: 1; filter: grayscale(0.4) opacity(0.65); transition: all 0.25s; height: 30px; display: flex; align-items: center; justify-content: center; }
     .history-node:hover .history-node-icon { filter: none; transform: translateY(-2px) scale(1.1); }
     .history-node.on .history-node-icon { filter: none; transform: scale(1.18); }
-    .history-node-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--rule); transition: all 0.25s; flex-shrink: 0; }
-    .history-node:hover .history-node-dot { border-color: var(--text); transform: scale(1.2); }
-    .history-node.on .history-node-dot { background: var(--amber); border-color: var(--amber); transform: scale(1.4); box-shadow: 0 0 0 7px rgba(192,120,48,0.16); }
-    .history-node.self .history-node-dot { background: var(--bg); border-color: var(--blue); }
-    .history-node.on.self .history-node-dot { background: var(--blue); box-shadow: 0 0 0 7px rgba(122,184,255,0.18); }
-    .history-node-era { font-size: 0.7em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; text-align: center; line-height: 1.3; }
-    .history-node.on .history-node-era { color: var(--text); }
-    .history-node.self .history-node-era { color: var(--blueD); }
-    .history-node.on.self .history-node-era { color: var(--blue); }
-    .history-detail { border: 1px solid var(--rule); padding: 20px 24px; background: var(--bg); transition: border-color 0.3s; }
-    .history-detail.self { border-color: var(--blueD); }
+    .history-node-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--era-dim, var(--rule)); transition: all 0.25s; flex-shrink: 0; }
+    .history-node:hover .history-node-dot { border-color: var(--era-color, var(--text)); transform: scale(1.2); }
+    .history-node.on .history-node-dot { background: var(--era-color, var(--blue)); border-color: var(--era-color, var(--blue)); transform: scale(1.4); box-shadow: 0 0 0 7px var(--era-ring, rgba(122,184,255,0.16)); }
+    .history-node.self .history-node-dot { background: var(--bg); border-color: var(--era-color, var(--blue)); }
+    .history-node.on.self .history-node-dot { background: var(--era-color, var(--blue)); box-shadow: 0 0 0 7px var(--era-ring, rgba(122,184,255,0.18)); }
+    .history-node-era { font-size: 0.7em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--era-dim, var(--muted)); white-space: nowrap; text-align: center; line-height: 1.3; }
+    .history-node.on .history-node-era { color: var(--era-color, var(--text)); }
+    .history-node.self .history-node-era { color: var(--era-dim, var(--blueD)); }
+    .history-node.on.self .history-node-era { color: var(--era-color, var(--blue)); }
+    .history-detail { border: 1px solid var(--era-dim, var(--rule)); padding: 20px 24px; background: linear-gradient(90deg, var(--era-bg, transparent), transparent 58%), var(--bg); transition: border-color 0.3s, background 0.3s; }
+    .history-detail.self { border-color: var(--era-dim, var(--blueD)); }
     .history-detail-grid { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; }
-    .history-detail-era { font-family: var(--font-m); font-size: 0.95em; color: var(--amberD); margin-bottom: 3px; letter-spacing: 0.04em; }
-    .history-detail.self .history-detail-era { color: var(--blueD); }
-    .history-detail-label { font-family: var(--font-d); font-size: 1.4em; font-weight: 700; color: var(--amber); line-height: 1.08; margin-bottom: 4px; }
-    .history-detail.self .history-detail-label { color: var(--blue); font-style: italic; }
+    .history-detail-era { font-family: var(--font-m); font-size: 0.95em; color: var(--era-dim, var(--blueD)); margin-bottom: 3px; letter-spacing: 0.04em; }
+    .history-detail.self .history-detail-era { color: var(--era-dim, var(--blueD)); }
+    .history-detail-label { font-family: var(--font-d); font-size: 1.4em; font-weight: 700; color: var(--era-color, var(--blue)); line-height: 1.08; margin-bottom: 4px; }
+    .history-detail.self .history-detail-label { color: var(--era-color, var(--blue)); font-style: italic; }
     .history-detail-type { font-size: 0.65em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
     .history-detail-work { font-family: var(--font-d); font-size: 0.95em; font-style: italic; color: var(--text); margin-bottom: 10px; }
     .history-detail-body { font-size: 0.85em; line-height: 1.6; color: var(--muted); }
-    .history-clip { display: inline-flex; align-items: center; gap: 8px; font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; padding: 7px 14px; border: 1px solid var(--amberD); background: transparent; color: var(--amber); cursor: pointer; font-family: var(--font-u); transition: background 0.2s; }
-    .history-clip:hover:not(:disabled) { background: rgba(192,120,48,0.1); }
-    .history-clip.playing { background: rgba(192,120,48,0.16); }
+    .history-clip { display: inline-flex; align-items: center; gap: 8px; font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; padding: 7px 14px; border: 1px solid var(--era-dim, var(--blueD)); background: transparent; color: var(--era-color, var(--blue)); cursor: pointer; font-family: var(--font-u); transition: background 0.2s; }
+    .history-clip:hover:not(:disabled) { background: var(--era-bg, rgba(122,184,255,0.1)); }
+    .history-clip.playing { background: var(--era-ring, rgba(122,184,255,0.16)); }
     .history-clip:disabled { opacity: 0.4; cursor: not-allowed; }
-    .history-clip.self { border-color: var(--blueD); color: var(--blue); }
-    .history-clip.self:hover:not(:disabled) { background: rgba(122,184,255,0.1); }
-    .history-clip.self.playing { background: rgba(122,184,255,0.16); }
+    .history-clip.self { border-color: var(--era-dim, var(--blueD)); color: var(--era-color, var(--blue)); }
+    .history-clip.self:hover:not(:disabled) { background: var(--era-bg, rgba(122,184,255,0.1)); }
+    .history-clip.self.playing { background: var(--era-ring, rgba(122,184,255,0.16)); }
     @media (max-width: 760px) {
       .history-track { flex-direction: column; align-items: stretch; gap: 0; padding: 14px 0; }
       .history-line { left: 16px; right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
@@ -566,6 +566,10 @@ const TIMELINE = [
     era:'Pre-1000 AD',
     icon:'🕯️',
     label:'Ritual Continuity',
+    color:'oklch(0.74 0.11 86)',
+    dim:'oklch(0.52 0.08 86)',
+    ring:'oklch(0.74 0.11 86 / 0.16)',
+    bg:'oklch(0.74 0.11 86 / 0.07)',
     type:'Repetition · Monophony',
     work:'Gregorian chant',
     body:"A single voice line, returning to fixed melodic formulas. Continuity comes from ritual repetition — the same modes, the same intonation, the same liturgical day in and day out. There is no harmony yet. The thread is sameness itself, sustained over centuries.",
@@ -576,6 +580,10 @@ const TIMELINE = [
     era:'1100–1300',
     icon:'⛪',
     label:'Polyphonic Continuity',
+    color:'oklch(0.68 0.13 286)',
+    dim:'oklch(0.49 0.1 286)',
+    ring:'oklch(0.68 0.13 286 / 0.16)',
+    bg:'oklch(0.68 0.13 286 / 0.07)',
     type:'Overlapping Lines',
     work:'Notre Dame school · Organum',
     body:"Léonin and Pérotin stack voices on top of the chant — one sustained tone in the lower voice while florid lines move above it. Continuity now means simultaneity: multiple lines holding together as one cathedral-scale piece. The first time vertical density itself becomes a way to bind a work.",
@@ -586,6 +594,10 @@ const TIMELINE = [
     era:'1400–1600',
     icon:'📜',
     label:'Vocal Polyphony',
+    color:'oklch(0.7 0.14 350)',
+    dim:'oklch(0.5 0.1 350)',
+    ring:'oklch(0.7 0.14 350 / 0.16)',
+    bg:'oklch(0.7 0.14 350 / 0.07)',
     type:'Motif Recurrence',
     work:'Josquin des Prez · motets',
     body:"Imitation becomes structural. A short melodic figure passes from voice to voice, returning, inverting, knitting the texture together. The first composers to treat motif as the engine of continuity — exactly the logic Cortex would reach for five hundred years later.",
@@ -596,6 +608,10 @@ const TIMELINE = [
     era:'1722',
     icon:'🎹',
     label:'Tonal Continuity',
+    color:'oklch(0.72 0.12 195)',
+    dim:'oklch(0.5 0.09 195)',
+    ring:'oklch(0.72 0.12 195 / 0.16)',
+    bg:'oklch(0.72 0.12 195 / 0.07)',
     type:'Keyboard · 24 Preludes & Fugues',
     work:'Bach · The Well-Tempered Clavier, Book I',
     body:"Forty-eight pieces, one prelude and one fugue in every major and minor key, designed as a single architectural statement. Each pair is its own small world; together they prove the whole tonal system can hold as one cycle. Continuity at the scale of the collection — the closest historical ancestor to the modern album.",
@@ -606,6 +622,10 @@ const TIMELINE = [
     era:'1750–1800',
     icon:'🎼',
     label:'Sonata Continuity',
+    color:'oklch(0.72 0.14 145)',
+    dim:'oklch(0.5 0.1 145)',
+    ring:'oklch(0.72 0.14 145 / 0.16)',
+    bg:'oklch(0.72 0.14 145 / 0.07)',
     type:'Thematic Development',
     work:'Mozart · piano sonatas',
     body:"A theme is stated, fractured, transposed, recombined over the course of a movement. The listener follows one argument unfolding in time. Continuity is no longer repetition or cycle — it is transformation: the same idea put through change while you are asked to remember what it sounded like at the start.",
@@ -616,6 +636,10 @@ const TIMELINE = [
     era:'1975 →',
     icon:'💿',
     label:'Album Continuity',
+    color:'oklch(0.65 0.14 234)',
+    dim:'oklch(0.42 0.11 234)',
+    ring:'oklch(0.65 0.14 234 / 0.18)',
+    bg:'oklch(0.65 0.14 234 / 0.08)',
     type:'Motifs · Palette',
     work:'Cortex · Troupeau Bleu',
     body:"The 33-rpm LP is the first format that lets a non-classical composer treat thirty-five minutes as a single unit. Cortex use that unit the way Josquin used a motet: a small set of sounds — vocal, electric piano, snap drums, bass pocket — returning across every track, locking the record into one continuous mood. The lineage above ends here, on the project this page is about.",
@@ -718,6 +742,16 @@ function getCortexTrackBySlug(trackSlug) {
   });
 }
 
+function getEraPlaybackTheme(era) {
+  return {
+    accent: era.color,
+    bg: `linear-gradient(90deg, ${era.bg}, rgba(9,8,11,0.94))`,
+    border: era.dim,
+    label: era.dim,
+    text: era.color,
+  };
+}
+
 function getPlaybackMeta(key) {
   const fallback = { title: 'Now playing', theme: PLAYBACK_THEMES.kendrick };
   if (!key) return fallback;
@@ -761,7 +795,7 @@ function getPlaybackMeta(key) {
 
   if (key.startsWith('history-')) {
     const era = TIMELINE.find(item => item.clipKey === key);
-    if (era) return { title: era.work, theme: era.self ? PLAYBACK_THEMES.cortex : PLAYBACK_THEMES.kendrick };
+    if (era) return { title: era.work, theme: getEraPlaybackTheme(era) };
   }
 
   return fallback;
@@ -1165,6 +1199,7 @@ function HistoryTimeline({ playing, onToggle }) {
   const era = TIMELINE[active];
   const isSelf = !!era.self;
   const isPlaying = playing === era.clipKey;
+  const eraStyle = {'--era-color': era.color, '--era-dim': era.dim, '--era-ring': era.ring, '--era-bg': era.bg};
   return (
     <section id="history" className="history-section">
       <div className="history-head">
@@ -1179,6 +1214,7 @@ function HistoryTimeline({ playing, onToggle }) {
           <button
             key={t.era}
             className={'history-node' + (active===i ? ' on' : '') + (t.self ? ' self' : '')}
+            style={{'--era-color': t.color, '--era-dim': t.dim, '--era-ring': t.ring, '--era-bg': t.bg}}
             onClick={() => setActive(i)}
             aria-current={active===i ? 'step' : undefined}
           >
@@ -1188,7 +1224,7 @@ function HistoryTimeline({ playing, onToggle }) {
           </button>
         ))}
       </div>
-      <div className={'history-detail' + (isSelf ? ' self' : '')}>
+      <div className={'history-detail' + (isSelf ? ' self' : '')} style={eraStyle}>
         <div className="history-detail-grid">
           <div>
             <div className="history-detail-era">{era.era}</div>
