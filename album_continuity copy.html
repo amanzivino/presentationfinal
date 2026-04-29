@@ -685,6 +685,80 @@ function renderAnnotated(text, annotations) {
   return nodes;
 }
 
+const PLAYBACK_THEMES = {
+  kendrick: {
+    accent: 'oklch(0.68 0.15 40)',
+    bg: 'linear-gradient(90deg, rgba(55,31,17,0.94), rgba(9,8,11,0.94))',
+    border: 'rgba(192,120,48,0.42)',
+    label: 'rgba(192,120,48,0.72)',
+    text: 'rgba(255,236,214,0.84)',
+  },
+  cortex: {
+    accent: 'oklch(0.65 0.14 234)',
+    bg: 'linear-gradient(90deg, rgba(13,34,60,0.94), rgba(9,8,11,0.94))',
+    border: 'rgba(122,184,255,0.46)',
+    label: 'rgba(122,184,255,0.72)',
+    text: 'rgba(222,238,255,0.86)',
+  },
+};
+
+function getKendrickTrackByNum(trackNum) {
+  return STAGES.flatMap(stage => stage.tracks).find(track => track.num === trackNum);
+}
+
+function getCortexTrackBySlug(trackSlug) {
+  return CORTEX.find(track => (CORTEX_TRACK_SLUGS[track.clipKey] || clipKey(track.clipKey)) === trackSlug);
+}
+
+function getPlaybackMeta(key) {
+  const fallback = { title: 'Now playing', theme: PLAYBACK_THEMES.kendrick };
+  if (!key) return fallback;
+
+  const kendrickTrack = STAGES
+    .flatMap(stage => stage.tracks)
+    .find(track => {
+      const slug = clipKey(track.name);
+      return key === slug || key.startsWith(slug + '-excerpt-');
+    });
+  if (kendrickTrack) {
+    return { title: 'Kendrick Lamar — ' + kendrickTrack.name, theme: PLAYBACK_THEMES.kendrick };
+  }
+
+  if (key.startsWith('vm-')) {
+    const vmNum = Number(key.replace('vm-', ''));
+    const vm = VOICEMAILS.find(item => item.num === vmNum);
+    const track = vm ? getKendrickTrackByNum(vm.track) : null;
+    if (track) return { title: 'Kendrick Lamar — ' + track.name, theme: PLAYBACK_THEMES.kendrick };
+    if (vm) return { title: 'Kendrick Lamar — ' + vm.song, theme: PLAYBACK_THEMES.kendrick };
+  }
+
+  if (key.startsWith('cortex-motif-')) {
+    const track = CORTEX.find(item => {
+      const trackSlug = CORTEX_TRACK_SLUGS[item.clipKey] || clipKey(item.clipKey);
+      return key.endsWith('-' + trackSlug);
+    });
+    if (track) return { title: 'Cortex — ' + track.title, theme: PLAYBACK_THEMES.cortex };
+  }
+
+  if (key.startsWith('cortex-')) {
+    const trackSlug = key.replace(/^cortex-/, '');
+    const track = getCortexTrackBySlug(trackSlug);
+    if (track) return { title: 'Cortex — ' + track.title, theme: PLAYBACK_THEMES.cortex };
+  }
+
+  if (key.startsWith('sample-')) {
+    const sample = SAMPLES.find(item => 'sample-' + clipKey(item.track) === key);
+    if (sample) return { title: sample.artist + ' — ' + sample.track, theme: PLAYBACK_THEMES.cortex };
+  }
+
+  if (key.startsWith('history-')) {
+    const era = TIMELINE.find(item => item.clipKey === key);
+    if (era) return { title: era.work, theme: era.self ? PLAYBACK_THEMES.cortex : PLAYBACK_THEMES.kendrick };
+  }
+
+  return fallback;
+}
+
 // ── COMPONENTS ────────────────────────────────────────────────────────────────
 
 function Nav() {
@@ -1394,6 +1468,7 @@ function App() {
   }, []);
 
   const scrollTo = id => { const el=document.getElementById(id); if(el) window.scrollTo({top:el.offsetTop-60,behavior:'smooth'}); };
+  const playbackMeta = getPlaybackMeta(playing);
 
   return (
     <>
@@ -1595,26 +1670,13 @@ function App() {
 
       <A11y />
       {playing && (
-        <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',zIndex:9999,display:'flex',alignItems:'center',gap:12,background:'rgba(9,8,11,0.92)',border:'1px solid rgba(255,255,255,0.1)',borderRadius:6,padding:'8px 16px',backdropFilter:'blur(12px)',maxWidth:'90vw'}}>
-          <div style={{width:6,height:6,borderRadius:'50%',background:'#c07830',flexShrink:0,animation:'pulse 1.2s infinite'}} />
-          <span style={{fontSize:'9px',letterSpacing:'0.18em',textTransform:'uppercase',color:'rgba(255,255,255,0.3)',fontFamily:'Space Grotesk,sans-serif',flexShrink:0}}>Now Playing</span>
-          <span style={{fontSize:'9px',fontFamily:'Cormorant Garamond,Georgia,serif',fontStyle:'italic',fontSize:'13px',color:'rgba(255,255,255,0.7)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:260}}>
-            {(() => {
-              const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-              const all = STAGES.flatMap(s=>s.tracks);
-              const t = all.find(t => clipKey(t.name)===playing); if (t) return t.name;
-              if (playing.startsWith('cortex-motif-')) {
-                const row = MOTIFS.rows.find(r => playing.startsWith('cortex-motif-' + (MOTIF_SLUGS[r.lbl] || slug(r.lbl)) + '-'));
-                const col = MOTIFS.cols.find(c => playing.endsWith('-' + (CORTEX_TRACK_SLUGS[c] || slug(c))));
-                if (row && col) return 'Cortex — ' + row.lbl + ' / ' + col;
-              }
-              if (playing.startsWith('cortex-')) { const c = MOTIFS.cols.find(c => 'cortex-'+slug(c) === playing); if (c) return 'Cortex — '+c; }
-              if (playing.startsWith('sample-')) { const s = SAMPLES.find(s => 'sample-'+slug(s.track) === playing); if (s) return s.artist+' — '+s.track; }
-              if (playing.startsWith('history-')) { const h = TIMELINE.find(h => h.clipKey === playing); if (h) return h.work; }
-              return playing;
-            })()}
+        <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',zIndex:9999,display:'flex',alignItems:'center',gap:12,background:playbackMeta.theme.bg,border:'1px solid '+playbackMeta.theme.border,borderRadius:6,padding:'8px 16px',backdropFilter:'blur(12px)',maxWidth:'90vw'}}>
+          <div style={{width:6,height:6,borderRadius:'50%',background:playbackMeta.theme.accent,flexShrink:0,animation:'pulse 1.2s infinite'}} />
+          <span style={{fontSize:'9px',letterSpacing:'0.18em',textTransform:'uppercase',color:playbackMeta.theme.label,fontFamily:'Space Grotesk,sans-serif',flexShrink:0}}>Now Playing</span>
+          <span style={{fontFamily:'Cormorant Garamond,Georgia,serif',fontStyle:'italic',fontSize:'13px',color:playbackMeta.theme.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:300}}>
+            {playbackMeta.title}
           </span>
-          <button onClick={stopAll} style={{fontSize:'9px',letterSpacing:'0.18em',textTransform:'uppercase',padding:'5px 10px',background:'transparent',color:'#c07830',cursor:'pointer',fontFamily:'Space Grotesk,sans-serif',border:'1px solid rgba(192,120,48,0.4)',borderRadius:3,flexShrink:0}}>■ Stop</button>
+          <button onClick={stopAll} style={{fontSize:'9px',letterSpacing:'0.18em',textTransform:'uppercase',padding:'5px 10px',background:'transparent',color:playbackMeta.theme.accent,cursor:'pointer',fontFamily:'Space Grotesk,sans-serif',border:'1px solid '+playbackMeta.theme.border,borderRadius:3,flexShrink:0}}>■ Stop</button>
         </div>
       )}
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
