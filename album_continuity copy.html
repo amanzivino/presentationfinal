@@ -363,12 +363,18 @@ function deriveClipUrlFromBase(baseUrl, suffix) {
 // Cortex track clips for the motif matrix. Filenames the user can upload to /amanzivino/audio.
 const CORTEX_CLIPS = {
   'La Rue':         BASE + 'cortex-la-rue.mp3',
+  'Automne':        BASE + 'cortex-automne.mp3',
   "L'enfant Samba": BASE + 'cortex-lenfant-samba.mp3',
   'Troupeau Bleu':  BASE + 'cortex-troupeau-bleu.mp3',
   'Prélude':        BASE + 'cortex-prelude.mp3',
   'Go Round':       BASE + 'cortex-go-round.mp3',
   'Chanson':        BASE + 'cortex-chanson.mp3',
+  'Mary et Jeff':   BASE + 'cortex-mary-et-jeff.mp3',
   'Huit Octobre':   BASE + 'cortex-huit-octobre.mp3',
+  'Sabbat 1':       BASE + 'cortex-sabbat-1.mp3',
+  'Sabbat 2':       BASE + 'cortex-sabbat-2.mp3',
+  'Sabbat 3':       BASE + 'cortex-sabbat-3.mp3',
+  'Madbass':        BASE + 'cortex-madbass.mp3',
 };
 
 // Clips for the "Where This Sound Went" cards.
@@ -418,12 +424,18 @@ function getTrackClipUrlByNum(trackNum) {
 
 const CORTEX = [
   { num:1, title:'La Rue', url:'https://open.spotify.com/track/6lzDycd60SJ7H8y6wuESGl', role:'Where it begins', badge:'Palette', short:"The album announces itself in the first minute. Bass, drums, electric piano, and Mireille Dalbray's voice floating above it all.", full:"Jean Grevet's bass line locks in. Alain Gandolfi's drums snap and sputter. In four minutes, Cortex tells you everything you need to know about what this record is going to feel like." },
-  { num:2, title:"L'enfant Samba", url:'https://open.spotify.com/track/5uM2TbV57PabdmqUTJa1pG', role:'Same world, different rhythm', badge:'Range', short:"A samba groove that somehow still sounds completely like Cortex.", full:"The rhythm shifts into samba territory, but the palette stays intact — the same crisp drums, the same warm piano, the same hazy feeling." },
-  { num:4, title:'Troupeau Bleu', url:'https://open.spotify.com/track/2DTHWr5NK1igQZxctpYTA9', role:'The center of gravity', badge:'Anchor', short:"The title track. The emotional heart. Everything on the album orbits around this one.", full:"Troupeau Bleu recenters you. The rhythm section locks in with a kind of soft confidence. Dalbray drifts above it. This is the sound the whole album is trying to hold onto." },
-  { num:5, title:'Prélude à Go Round', url:'https://open.spotify.com/track/7qnSmz4abtOXKuYhaRYuPv', role:'The trick structure', badge:'Segue', short:"A four-minute build-up that flows directly into a 90-second piano solo.", full:"The Prélude is complex, layered, four minutes of tension building — then it dissolves into Go Round. Tracks don't end on this record. They evaporate." },
-  { num:6, title:'Go Round', url:'https://open.spotify.com/track/3CKsKWOasAzsjlhdWk9DGs', role:'The afterglow', badge:'Motif', short:"A 90-second piano solo — delicate, barely there.", full:"A quiet piano figure that echoes La Rue's electric piano and will reappear in Chanson d'un jour d'hiver." },
-  { num:7, title:"Chanson d'un jour d'hiver", url:'https://open.spotify.com/track/49ECKlsOXqyNXydiNCS2Md', role:'The melancholic peak', badge:'Peak', short:"The most wistful track on the album.", full:"This is the hazy, slightly sad peak the whole record has been drifting toward. Wistful and ballad-like, but the jazz-funk backbone never disappears." },
-  { num:9, title:'Huit Octobre 1971', url:'https://open.spotify.com/track/2CsnpBAB8VQMTyPuws57ao', role:'The climax that holds', badge:'Limit', short:"Wild tempo shifts, operatic scope — and still unmistakably Cortex.", full:"Huit Octobre moves through distinct sections, abrupt changes, frenzied drums. And yet it never stops feeling like the same record." },
+  { num:2, title:'Automne (Colchiques)', url:'https://open.spotify.com/track/5Rt5pomA6CvKTuCllwRY74', role:'The hush after', badge:'Hush', short:"From that opening palette into a hushed children's-song cover — Dalbray alone, the band drawing back so the melody can breathe.", full:"A traditional French song ('Colchiques dans les prés', written by Jacqueline Claude and Francine Cockenpot) reimagined as a near-acapella showcase. Dalbray's voice carries the whole thing while the band shrinks to a whisper. The album proves it can do silence too." },
+  { num:3, title:"L'enfant Samba", url:'https://open.spotify.com/track/5uM2TbV57PabdmqUTJa1pG', role:'Same world, different rhythm', badge:'Range', short:"The band steps back in and the rhythm shifts into samba — same crisp drums, same warm piano, same hazy feeling.", full:"The groove turns Brazilian, but the palette stays intact. Cortex keeps proving that any rhythm they pick up still comes out sounding like Cortex." },
+  { num:4, title:'Troupeau Bleu', url:'https://open.spotify.com/track/2DTHWr5NK1igQZxctpYTA9', role:'The center of gravity', badge:'Anchor', short:"From the samba lift, the record settles into its center. The title track. The emotional heart everything else orbits.", full:"Troupeau Bleu recenters you. The rhythm section locks in with a kind of soft confidence. Dalbray drifts above it. This is the sound the whole album is trying to hold onto." },
+  { num:5, title:'Prélude à Go Round', url:'https://open.spotify.com/track/7qnSmz4abtOXKuYhaRYuPv', role:'The trick structure', badge:'Segue', short:"Out of that center, a four-minute build that flows directly into the 90-second piano solo it's been pointing at.", full:"The Prélude is complex, layered, four minutes of tension building — then it dissolves into Go Round. Tracks don't end on this record. They evaporate." },
+  { num:6, title:'Go Round', url:'https://open.spotify.com/track/3CKsKWOasAzsjlhdWk9DGs', role:'The afterglow', badge:'Motif', short:"And there it is — a delicate piano figure, barely there, echoing La Rue and pointing toward Chanson d'un jour d'hiver.", full:"A quiet piano figure that echoes La Rue's electric piano and will reappear in Chanson d'un jour d'hiver." },
+  { num:7, title:"Chanson d'un jour d'hiver", url:'https://open.spotify.com/track/49ECKlsOXqyNXydiNCS2Md', role:'The melancholic peak', badge:'Peak', short:"Out of that quiet, the most wistful track on the album emerges — the hazy peak the whole record has been drifting toward.", full:"Wistful and ballad-like, but the jazz-funk backbone never disappears. This is where the album lets itself feel sad without losing its pulse." },
+  { num:8, title:'Mary et Jeff', url:'https://open.spotify.com/track/0ztpWjYYFWQaw5DnPDIYkl', role:'The funk break', badge:'Pocket', short:"The wistfulness lifts into a brisk jazz-funk pocket — Mion's keys and Grevet's bass trading lines around the beat.", full:"Two and a half minutes of pure jazz-funk. Alain Mion's electric piano and Jean Grevet's fretless bass dance around the beat instead of locking to it. One of the most-sampled tracks Cortex ever recorded — a piano figure rappers and producers would still be flipping fifty years later." },
+  { num:9, title:'Huit Octobre 1971', url:'https://open.spotify.com/track/2CsnpBAB8VQMTyPuws57ao', role:'The climax that holds', badge:'Limit', short:"Then everything escalates: wild tempo shifts, operatic scope — and still unmistakably Cortex.", full:"Huit Octobre moves through distinct sections, abrupt changes, frenzied drums. And yet it never stops feeling like the same record." },
+  { num:10, title:'Sabbat, pt. 1', url:'https://open.spotify.com/track/6RZYzVk2IG0PhhF3PMbLSQ', role:'The threshold', badge:'Threshold', short:"After the climax, a one-minute incantation opens the three-part Sabbat suite.", full:"An incantation. Just over a minute, almost ritual — a curtain raiser for the three-part suite that follows." },
+  { num:11, title:'Sabbat, pt. 2', url:'https://open.spotify.com/track/629ribrku1CI6lYRTXs9NF', role:'The trance', badge:'Trance', short:"The suite breaks open into its longest movement — drums and bass driving a darker groove than anything before it.", full:"The full Sabbat. The drums move from snap to march, the bass turns ominous, and the piano traces something darker than anything else on the record." },
+  { num:12, title:'Sabbat, pt. 3', url:'https://open.spotify.com/track/0CycZ8pvvdqSyBxJLapOOI', role:'The dissolve', badge:'Coda', short:"Thirty-one seconds and it's gone — the Sabbat dissolves on a single held breath.", full:"A 31-second coda. The suite resolves and disappears almost before you notice it's there." },
+  { num:13, title:'Madbass', url:'https://open.spotify.com/track/5rFXbyxDXQ8m5Dh1VuNiGq', role:'The last word', badge:'Closer', short:"The closer. Grevet's bass takes the last word, and the record fades back into the same fog it began in.", full:"A bass-led closer. Jean Grevet steps to the front; the rest of the band hangs back. The album ends on the instrument that's been holding it together all along." },
 ];
 
 const PINS = [
@@ -503,14 +515,14 @@ const SAMPLES = [
 
 // Motif recurrence on Troupeau Bleu. 0 = absent · 1 = subtle · 2 = present · 3 = central.
 const MOTIFS = {
-  cols: ['La Rue', "L'enfant Samba", 'Troupeau Bleu', 'Prélude', 'Go Round', 'Chanson', 'Huit Octobre'],
+  cols: ['La Rue', 'Automne', "L'enfant Samba", 'Troupeau Bleu', 'Prélude', 'Go Round', 'Chanson', 'Mary et Jeff', 'Huit Octobre', 'Sabbat 1', 'Sabbat 2', 'Sabbat 3', 'Madbass'],
   rows: [
-    { lbl:'Electric piano figure',  cells:[3,1,2,1,3,3,1] },
-    { lbl:"Dalbray's vocal",        cells:[3,2,3,0,0,3,2] },
-    { lbl:'Gandolfi snap drums',    cells:[3,3,3,3,0,2,3] },
-    { lbl:'Grevet bass pocket',     cells:[3,3,3,3,1,2,3] },
-    { lbl:'Wistful / hazy mood',    cells:[2,1,3,2,3,3,2] },
-    { lbl:'Track-to-track bleed',   cells:[0,1,1,3,3,1,1] },
+    { lbl:'Electric piano figure',  cells:[3,1,1,2,1,3,3,3,1,0,1,0,1] },
+    { lbl:"Dalbray's vocal",        cells:[3,3,2,3,0,0,3,0,2,1,1,0,0] },
+    { lbl:'Gandolfi snap drums',    cells:[3,0,3,3,3,0,2,3,3,1,3,1,2] },
+    { lbl:'Grevet bass pocket',     cells:[3,1,3,3,3,1,2,3,3,1,3,1,3] },
+    { lbl:'Wistful / hazy mood',    cells:[2,3,1,3,2,3,3,1,2,2,2,2,2] },
+    { lbl:'Track-to-track bleed',   cells:[0,1,1,1,3,3,1,1,1,3,3,3,0] },
   ],
 };
 
