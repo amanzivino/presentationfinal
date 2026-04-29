@@ -708,7 +708,14 @@ function getKendrickTrackByNum(trackNum) {
 }
 
 function getCortexTrackBySlug(trackSlug) {
-  return CORTEX.find(track => (CORTEX_TRACK_SLUGS[track.clipKey] || clipKey(track.clipKey)) === trackSlug);
+  return CORTEX.find(track => {
+    const slugs = [
+      CORTEX_TRACK_SLUGS[track.clipKey],
+      clipKey(track.clipKey),
+      clipKey(track.title),
+    ].filter(Boolean);
+    return slugs.includes(trackSlug);
+  });
 }
 
 function getPlaybackMeta(key) {
@@ -879,7 +886,8 @@ function TrackRow({ track, badge, playing, onToggle }) {
 function CortexRow({ track, playing, onToggle }) {
   const [open, setOpen] = useState(false);
   const clipUrl = CORTEX_CLIPS[track.clipKey] || '';
-  const playKey = 'cortex-' + track.clipKey.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const trackSlug = CORTEX_TRACK_SLUGS[track.clipKey] || clipKey(track.clipKey);
+  const playKey = 'cortex-' + trackSlug;
   const isPlaying = playing === playKey;
   return (
     <div className="cortex-item">
