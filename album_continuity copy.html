@@ -1262,6 +1262,7 @@ function HistoryTimeline({ playing, onToggle }) {
           <div className="history-detail-body">{era.body}</div>
         </div>
       </div>
+      <p className="history-intro">By the time we reach the album era, continuity splits: it can be carried by narrative progression or by sonic identity. The two records here take those paths to their extremes.</p>
     </section>
   );
 }
@@ -1603,7 +1604,7 @@ function App() {
         <div className="editorial">
           <div className="ed-intro">
             <div className="ed-intro-label">Track by Track — Chain Reaction</div>
-            <div className="ed-intro-text">The album follows one day in Compton: one choice leads to the next. Click a track to expand, or click its title to open Spotify.</div>
+            <div className="ed-intro-text">Continuity here is causal: each track is a consequence of the last. The album follows one day in Compton: one choice leads to the next. Click a track to expand, or click its title to open Spotify.</div>
           </div>
 
           <button className="char-toggle" onClick={() => setCharOpen(o=>!o)}>
@@ -1704,6 +1705,9 @@ function App() {
             <a className="spotify-link b" href="https://open.spotify.com/album/74DOWHisu2jlFvPid9YTGB" target="_blank" rel="noopener">♫ Find on Spotify</a>
           </div>
         </div>
+        <div className="ed-intro" style={{padding:'32px 40px 24px'}}>
+          <div className="ed-intro-text">This album does not move forward, it deepens. Continuity comes from staying inside the same sound world.</div>
+        </div>
         <div className="framework">
           {FRAMEWORK.sonic.map(el => (
             <div key={el.lbl} className="fw-cell">
@@ -1723,7 +1727,7 @@ function App() {
       <section id="bridge" style={{borderTop:'1px solid var(--rule)'}} className="bridge">
         <div className="bridge-kicker">Final Take</div>
         <div className="bridge-title">Two Approaches,<br />One Goal</div>
-        <p className="bridge-body">One album repeats story elements. The other repeats sound elements. Both show how art can keep a clear identity across time while still moving forward.</p>
+        <p className="bridge-body">One album holds together through cause and effect. The other holds together through recurrence and atmosphere. Both show how art can keep a clear identity across time while still moving forward.</p>
         <div className="bridge-cols">
           <div className="b-col-a">
             <div className="bridge-col-eye">Side A</div>
@@ -1753,6 +1757,7 @@ function App() {
           <div className="bridge-coda-title">Why It Works</div>
           <div className="bridge-coda-body">Kendrick builds a clear plot. Cortex builds a clear atmosphere. Both stay focused on one thread from beginning to end.</div>
         </div>
+        <p className="bridge-body" style={{marginBottom:0}}>Across a thousand years, the methods change, but the goal does not: to make time feel like a single, continuous thing.</p>
       </section>
 
       <A11y />
