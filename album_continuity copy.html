@@ -492,24 +492,31 @@
     }
     #cur-ring {
       position: fixed; top: 0; left: 0; z-index: 99998; pointer-events: none;
-      width: 32px; height: 32px; border-radius: 50%;
-      border: 1px solid oklch(0.65 0.14 234 / 0.6);
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid var(--text);
       transform: translate(-50%, -50%);
+      opacity: 0;
       transition: width .35s cubic-bezier(.2,.8,.2,1),
                   height .35s cubic-bezier(.2,.8,.2,1),
-                  border-color .35s, opacity .3s, border-width .3s;
+                  border-color .35s, border-width .3s,
+                  opacity .25s, box-shadow .3s, border-radius .25s;
       will-change: transform;
       mix-blend-mode: difference;
     }
+    /* Ring is only visible when the cursor has context */
+    body.cur-hover #cur-ring,
+    body.cur-text  #cur-ring,
+    body.cur-a     #cur-ring,
+    body.cur-b     #cur-ring { opacity: 1; }
     /* Hover state on interactive elements */
-    body.cur-hover #cur-dot { width: 0; height: 0; opacity: 0; }
-    body.cur-hover #cur-ring { width: 48px; height: 48px; border-color: var(--text); border-width: 1.5px; }
+    body.cur-hover #cur-dot  { width: 0; height: 0; opacity: 0; }
+    body.cur-hover #cur-ring { width: 48px; height: 48px; border-width: 1.5px; }
     /* Amber tint (Side A elements) */
-    body.cur-a #cur-ring { border-color: oklch(0.68 0.15 40 / 0.8); box-shadow: 0 0 10px oklch(0.68 0.15 40 / 0.25); }
+    body.cur-a #cur-ring { border-color: oklch(0.68 0.15 40 / 0.85); box-shadow: 0 0 10px oklch(0.68 0.15 40 / 0.25); }
     /* Blue tint (Side B elements) */
-    body.cur-b #cur-ring { border-color: oklch(0.65 0.14 234 / 0.8); box-shadow: 0 0 10px oklch(0.65 0.14 234 / 0.25); }
+    body.cur-b #cur-ring { border-color: oklch(0.65 0.14 234 / 0.85); box-shadow: 0 0 10px oklch(0.65 0.14 234 / 0.25); }
     /* Pressed */
-    body.cur-down #cur-ring { width: 22px; height: 22px; border-color: var(--text); }
+    body.cur-down #cur-ring { width: 22px; height: 22px; opacity: 1; border-color: var(--text); }
     /* Text cursor */
     body.cur-text #cur-ring { width: 2px; height: 28px; border-radius: 1px; }
 
