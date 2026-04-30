@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Album Continuity — A Magnum Opus</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%2309080b'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Georgia,serif' font-size='26' fill='%23ede9e1'%3EAC%3C/text%3E%3C/svg%3E" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Space+Grotesk:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #09080b; --bg2: #0f0d12;
+      --text: #ede9e1; --muted: #7a7570; --faint: #2a2730; --rule: #1e1c22;
+      --amber: oklch(0.68 0.15 40); --amberD: oklch(0.48 0.12 40);
+      --blue: oklch(0.65 0.14 234); --blueD: oklch(0.42 0.11 234);
+      --lh: 1.72;
+      --font-d: 'Cormorant Garamond', Georgia, serif;
+      --font-u: 'Space Grotesk', system-ui, sans-serif;
+      --font-m: 'DM Mono', monospace;
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: var(--font-u); background: var(--bg); color: var(--text); font-size: 1rem; line-height: var(--lh); cursor: none; }
+    body.hi-contrast { --muted: #c8c4bc; --faint: #3a3840; }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--faint); }
+    a { color: inherit; text-decoration: none; }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 9000; display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; transition: background 0.3s, border-color 0.3s; border-bottom: 1px solid transparent; }
+    .nav.stuck { background: rgba(9,8,11,0.94); backdrop-filter: blur(16px); border-color: var(--rule); }
+    .nav-logo { font-family: var(--font-d); font-size: 1.125em; font-weight: 700; cursor: pointer; background: none; border: none; color: var(--text); }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-btn { font-size: 0.7em; letter-spacing: 0.2em; text-transform: uppercase; background: none; border: none; font-family: var(--font-u); color: var(--muted); cursor: pointer; padding: 0; transition: color 0.2s; }
+    .nav-btn:hover, .nav-btn.on { color: var(--text); }
+
+    .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 100px 40px 56px; }
+    .hero.hero-narrow { min-height: 100vh; padding: 100px 40px 80px; justify-content: flex-start; }
+    .albums-intro { min-height: 100vh; padding: 80px 40px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; justify-content: center; }
+    .albums-intro-eye { font-size: 0.7em; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+    .albums-intro-title { font-family: var(--font-d); font-size: clamp(28px,4vw,46px); font-weight: 600; font-style: italic; color: var(--text); line-height: 1.15; margin-bottom: 36px; max-width: 720px; }
+    .hero-kicker { font-size: 0.7em; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .hero-magnum { font-family: var(--font-d); font-size: clamp(13px,1.4vw,18px); font-style: italic; color: var(--muted); margin-bottom: 28px; letter-spacing: 0.04em; }
+    .hero-title { font-family: var(--font-d); font-size: clamp(60px,13vw,190px); font-weight: 700; line-height: 0.88; letter-spacing: -0.02em; margin-bottom: 36px; }
+    .hero-rule { border: none; border-top: 1px solid var(--rule); margin-bottom: 28px; }
+    .hero-thesis { font-size: clamp(0.8125em,1.5vw,1.0625em); line-height: 1.8; color: var(--muted); max-width: 620px; margin-bottom: 56px; }
+    .hero-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); }
+    .hero-card { background: var(--bg); padding: 30px 36px 26px; cursor: pointer; transition: background 0.2s; position: relative; display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: start; }
+    .hero-card:hover { background: var(--bg2); }
+    .hero-card-art { width: 140px; height: 140px; background: var(--bg2); overflow: hidden; border-radius: 2px; box-shadow: 0 1px 0 var(--rule); }
+    .hero-card-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-card-body { min-width: 0; }
+    .hero-card-eye { font-size: 0.65em; letter-spacing: 0.24em; text-transform: uppercase; margin-bottom: 12px; }
+    .hero-card.a .hero-card-eye { color: var(--amberD); }
+    .hero-card.b .hero-card-eye { color: var(--blueD); }
+    .hero-card-title { font-family: var(--font-d); font-size: 2.2em; font-weight: 600; line-height: 1.1; margin-bottom: 6px; display: block; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color 0.2s, opacity 0.2s; }
+    .hero-card-title:hover { opacity: 0.8; text-decoration-color: currentColor; }
+    .hero-card.a .hero-card-title { color: var(--amber); }
+    .hero-card.b .hero-card-title { color: var(--blue); font-style: italic; }
+    .hero-card-sub { font-size: 0.7em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+    .hero-card-arrow { position: absolute; bottom: 26px; right: 32px; font-size: 1em; color: var(--faint); }
+
+    .sec-head { padding: 72px 40px 32px; border-bottom: 1px solid var(--rule); display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .sec-title { font-family: var(--font-d); font-size: clamp(34px,6vw,78px); font-weight: 700; line-height: 0.9; }
+    .sec-title.a { color: var(--amber); }
+    .sec-title.b { color: var(--blue); font-style: italic; }
+    .sec-right { text-align: right; }
+    .sec-label { font-size: 0.65em; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
+    .sec-meta { font-family: var(--font-m); font-size: 0.75em; color: var(--muted); display: block; margin-bottom: 10px; }
+    .spotify-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.7em; letter-spacing: 0.16em; text-transform: uppercase; padding: 5px 12px; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+    .spotify-link.a { color: var(--amber); border: 1px solid var(--amberD); }
+    .spotify-link.a:hover { background: rgba(192,120,48,0.1); }
+    .spotify-link.b { color: var(--blue); border: 1px solid var(--blueD); }
+    .spotify-link.b:hover { background: rgba(122,184,255,0.1); }
+
+    .editorial { padding: 0 60px 80px; }
+    .ed-intro { padding: 36px 0 32px; max-width: 560px; }
+    .ed-intro-label { font-size: 0.7em; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .ed-intro-text { font-size: 0.925em; line-height: 1.78; color: var(--muted); }
+
+    .char-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 18px; background: transparent; border: none; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 16px 0; cursor: pointer; text-align: left; color: var(--text); }
+    .char-toggle:hover { background: var(--bg2); }
+    .char-toggle-title { font-family: var(--font-d); font-size: 1.5em; font-weight: 600; color: var(--amber); }
+    .char-toggle-sub { font-size: 0.65em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+    .char-toggle-mark { font-size: 1.125em; color: var(--muted); flex-shrink: 0; }
+    .char-list { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
+    .char-row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+    .char-row:last-child { border-bottom: none; }
+    .char-name { font-family: var(--font-d); font-size: 1.375em; font-weight: 600; color: var(--amber); }
+    .char-role { font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amberD); margin-top: 4px; }
+    .char-desc { font-size: 0.875em; line-height: 1.75; color: var(--muted); }
+
+    .stage-divider { display: flex; align-items: center; gap: 16px; padding: 20px 0; border-top: 1px solid var(--rule); }
+    .stage-divider-num { font-family: var(--font-m); font-size: 0.7em; color: var(--rule); }
+    .stage-divider-name { font-size: 0.7em; letter-spacing: 0.28em; text-transform: uppercase; color: var(--amberD); }
+    .stage-divider-line { flex: 1; height: 1px; background: var(--rule); }
+
+    .track-item { border-bottom: 1px solid var(--rule); }
+    .track-top { display: grid; grid-template-columns: 44px 1fr auto; gap: 20px; padding: 20px 60px; cursor: pointer; align-items: start; transition: background 0.18s; margin: 0 -60px; }
+    .track-top:hover { background: var(--bg2); }
+    .track-num { font-family: var(--font-m); font-size: 0.75em; color: var(--rule); padding-top: 5px; }
+    .track-name-link { font-family: var(--font-d); font-size: 1.3125em; font-weight: 600; line-height: 1.15; color: var(--text); border-bottom: 1px solid transparent; transition: color 0.2s; }
+    .track-name-link:hover { color: var(--amber); border-bottom-color: var(--amberD); }
+    .track-short { font-size: 0.875em; line-height: 1.65; color: var(--muted); margin-top: 6px; }
+    .track-badge { font-size: 0.6em; letter-spacing: 0.2em; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--amberD); color: var(--amber); white-space: nowrap; margin-top: 5px; }
+    .track-toggle { font-size: 0.875em; color: var(--faint); align-self: center; flex-shrink: 0; }
+    .track-expand { padding: 0 0 28px 64px; }
+    .clip-btn { font-size: 0.65em; letter-spacing: 0.14em; text-transform: uppercase; padding: 6px 11px; border: 1px solid var(--rule); background: transparent; color: var(--muted); cursor: pointer; font-family: var(--font-u); margin-bottom: 12px; }
+    .clip-btn:hover:not(:disabled) { border-color: var(--amberD); color: var(--amber); }
+    .clip-btn.playing { border-color: var(--amberD); color: var(--amber); }
+    .clip-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .lyric-quote { border-left: 2px solid var(--amberD); padding: 10px 0 10px 18px; margin-bottom: 16px; }
+    .lyric-text { font-family: var(--font-d); font-size: 1.05em; font-style: italic; line-height: 1.55; color: oklch(0.78 0.06 50); white-space: pre-line; }
+    .track-analysis { font-size: 0.875em; line-height: 1.75; color: var(--muted); }
+
+    .map-chapter { margin-top: 42px; border-top: 1px solid var(--rule); padding-top: 30px; }
+    .map-chapter-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+    .map-chapter-title { font-family: var(--font-d); font-size: 1.75em; font-weight: 600; color: var(--amber); }
+    .map-chapter-sub { font-size: 0.7em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .map-wrap { position: relative; width: 100%; height: 68vh; }
+    #compton-map { width: 100%; height: 100%; display: block; }
+    .map-pin-label { pointer-events: none; }
+    .map-pin-label-inner { width: 132px; padding: 6px 8px; background: rgba(9,8,11,0.9); border: 1px solid rgba(192,120,48,0.45); color: var(--text); font-family: var(--font-u); box-shadow: 0 8px 20px rgba(0,0,0,0.32); }
+    .map-pin-label-track { display: block; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amberD); margin-bottom: 2px; }
+    .map-pin-label-name { display: block; font-size: 10px; line-height: 1.25; color: oklch(0.78 0.08 40); }
+    .loc-panel { background: #1a181d; border-top: 1px solid var(--rule); padding: 24px 40px; display: grid; grid-template-columns: 52px 1fr; gap: 20px; align-items: start; }
+    .loc-n { font-family: var(--font-m); font-size: 1.75em; color: var(--amberD); line-height: 1; }
+    .loc-name { font-family: var(--font-d); font-size: 1.25em; font-weight: 600; color: var(--amber); margin-bottom: 3px; }
+    .loc-track { font-size: 0.7em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .loc-body { font-size: 0.875em; line-height: 1.7; color: var(--muted); }
+    .loc-hint { padding: 16px 40px; border-top: 1px solid var(--rule); background: var(--bg2); font-size: 0.7em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); }
+
+    .framework { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--rule); }
+    .fw-cell { background: var(--bg); padding: 22px 18px; }
+    .fw-label { font-size: 0.65em; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blueD); margin-bottom: 8px; }
+    .fw-desc { font-size: 0.825em; line-height: 1.65; color: var(--muted); }
+    .cortex-item { border-bottom: 1px solid var(--rule); margin: 0 40px; }
+    .cortex-top { display: grid; grid-template-columns: 60px 1fr auto; gap: 24px; padding: 24px 0; cursor: pointer; align-items: start; transition: background 0.18s; }
+    .cortex-top:hover { background: var(--bg2); }
+    .cortex-num { font-family: var(--font-d); font-size: 1.875em; font-weight: 600; color: oklch(0.25 0.06 234); line-height: 1; }
+    .cortex-name-link { font-family: var(--font-d); font-size: 1.3125em; font-style: italic; font-weight: 600; border-bottom: 1px solid transparent; transition: color 0.2s; }
+    .cortex-name-link:hover { color: var(--blue); border-bottom-color: var(--blueD); }
+    .cortex-role { font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blueD); margin-top: 4px; }
+    .cortex-short { font-size: 0.875em; line-height: 1.65; color: var(--muted); margin-top: 8px; }
+    .cortex-badge { font-size: 0.6em; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; border: 1px solid var(--blueD); color: var(--blue); white-space: nowrap; align-self: start; margin-top: 4px; }
+    .cortex-expand { padding: 0 0 24px 84px; font-size: 0.875em; line-height: 1.75; color: var(--muted); }
+
+    .bridge { padding: 48px 40px 40px; min-height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+    .bridge-kicker { font-size: 0.7em; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .bridge-title { font-family: var(--font-d); font-size: clamp(30px,4.6vw,58px); font-weight: 700; line-height: 0.95; margin-bottom: 18px; }
+    .bridge-body { font-size: 0.92em; line-height: 1.6; color: var(--muted); max-width: 640px; margin-bottom: 28px; }
+    .bridge-cols { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 40px; margin-bottom: 24px; }
+    .bridge-divider { background: var(--rule); }
+    .bridge-col-eye { font-size: 0.65em; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 8px; }
+    .b-col-a .bridge-col-eye { color: var(--amberD); }
+    .b-col-b .bridge-col-eye { color: var(--blueD); }
+    .bridge-col-title { font-family: var(--font-d); font-size: 1.3em; font-weight: 600; margin-bottom: 4px; }
+    .b-col-a .bridge-col-title { color: var(--amber); }
+    .b-col-b .bridge-col-title { color: var(--blue); font-style: italic; }
+    .bridge-col-mode { font-size: 0.7em; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+    .bridge-el { padding: 8px 0; border-bottom: 1px solid var(--rule); }
+    .bridge-el-lbl { font-size: 0.62em; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 3px; }
+    .b-col-a .bridge-el-lbl { color: var(--amberD); }
+    .b-col-b .bridge-el-lbl { color: var(--blueD); }
+    .bridge-el-desc { font-size: 0.82em; line-height: 1.5; color: var(--muted); }
+    .bridge-coda { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 20px 0; margin-bottom: 16px; }
+    .bridge-coda-title { font-family: var(--font-d); font-size: 1.25em; font-weight: 600; margin-bottom: 8px; }
+    .bridge-coda-body { font-size: 0.88em; line-height: 1.6; color: var(--muted); max-width: 640px; }
+
+    .a11y-btn { position: fixed; bottom: 28px; right: 28px; z-index: 9999; width: 44px; height: 44px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--faint); font-family: var(--font-u); font-size: 0.8125em; font-weight: 600; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .a11y-btn:hover { border-color: var(--muted); color: var(--text); }
+    .a11y-panel { position: fixed; bottom: 84px; right: 28px; z-index: 9999; background: #0f0d12; border: 1px solid #3a3840; padding: 20px; width: 240px; }
+    .a11y-title { font-size: 0.65em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .a11y-row { margin-bottom: 14px; }
+    .a11y-label { font-size: 0.7em; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: block; }
+    .a11y-btns { display: flex; gap: 6px; }
+    .a11y-opt { flex: 1; padding: 7px 0; font-size: 0.7em; font-family: var(--font-u); background: transparent; border: 1px solid var(--rule); color: var(--muted); cursor: pointer; text-align: center; }
+    .a11y-opt.sel { border-color: var(--muted); color: var(--text); }
+
+    .leaflet-control-zoom a { background: #181620 !important; color: var(--muted) !important; border-color: var(--rule) !important; }
+    .leaflet-control-attribution { background: rgba(9,8,11,0.75) !important; color: var(--muted) !important; font-size: 9px !important; }
+
+    /* Annotated lyrics */
+    .anno { color: oklch(0.85 0.13 50); border-bottom: 1px dashed var(--amberD); cursor: help; position: relative; padding: 0 1px; }
+    .anno-pop { display: none; position: absolute; bottom: calc(100% + 10px); left: 0; min-width: 280px; max-width: 360px; background: #15131a; border: 1px solid var(--amberD); padding: 12px 16px; font-size: 12px; line-height: 1.6; color: var(--text); font-family: var(--font-u); font-style: normal; z-index: 200; white-space: normal; letter-spacing: 0; text-transform: none; box-shadow: 0 8px 24px rgba(0,0,0,0.5); pointer-events: none; }
+    .anno-pop::before { content: ''; position: absolute; bottom: -6px; left: 18px; width: 10px; height: 10px; background: #15131a; border-right: 1px solid var(--amberD); border-bottom: 1px solid var(--amberD); transform: rotate(45deg); }
+    .anno:hover .anno-pop, .anno:focus .anno-pop { display: block; }
+
+    /* Voicemail / phone log (Side A) */
+    .vm-section { margin-top: 36px; }
+    .vm-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 18px; background: transparent; border: none; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 16px 0; cursor: pointer; text-align: left; color: var(--text); font-family: var(--font-u); }
+    .vm-toggle:hover { background: var(--bg2); }
+    .vm-toggle-title { font-family: var(--font-d); font-size: 1.5em; font-weight: 600; color: var(--amber); }
+    .vm-toggle-sub { font-size: 0.65em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+    .vm-toggle-mark { font-size: 1.125em; color: var(--muted); flex-shrink: 0; }
+    .vm-log { padding: 22px 0 8px; }
+    .vm-frame { border: 1px solid var(--rule); background: #0d0b10; }
+    .vm-statusbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--rule); font-family: var(--font-m); font-size: 0.7em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); background: #15131a; }
+    .vm-statusbar-dot { width: 5px; height: 5px; border-radius: 50%; background: #c07830; display: inline-block; margin-right: 6px; vertical-align: middle; }
+    .vm-row { display: grid; grid-template-columns: 130px 1fr; gap: 22px; padding: 18px 22px; border-bottom: 1px solid var(--rule); align-items: start; }
+    .vm-row:last-child { border-bottom: none; }
+    .vm-meta { font-family: var(--font-m); }
+    .vm-time { font-size: 0.95em; color: var(--text); margin-bottom: 6px; }
+    .vm-dir { font-size: 0.6em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amberD); border: 1px solid var(--amberD); padding: 2px 7px; display: inline-block; }
+    .vm-from { font-family: var(--font-d); font-size: 1.125em; font-weight: 600; color: var(--amber); margin-bottom: 8px; }
+    .vm-text { font-family: var(--font-d); font-size: 0.95em; font-style: italic; color: oklch(0.78 0.06 50); line-height: 1.55; margin-bottom: 10px; padding: 8px 14px; background: rgba(192,120,48,0.06); border-left: 2px solid var(--amberD); }
+    .vm-note { font-size: 0.78em; line-height: 1.65; color: var(--muted); }
+    .vm-note-track { color: var(--amberD); font-family: var(--font-m); font-size: 0.95em; letter-spacing: 0.06em; }
+    .vm-disclaimer { padding: 11px 22px; font-size: 0.72em; color: var(--muted); border-bottom: 1px solid var(--rule); background: rgba(192,120,48,0.04); font-style: italic; line-height: 1.6; }
+    .vm-disclaimer b { color: var(--amberD); font-weight: 500; font-style: normal; letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.85em; margin-right: 8px; }
+
+    .map-chapter-toggle { width: 100%; background: transparent; border: none; cursor: pointer; color: inherit; font-family: inherit; padding: 0; text-align: left; }
+    .map-chapter-toggle:hover .map-chapter-title { opacity: 0.85; }
+    .map-chapter-mark { font-size: 1.25em; color: var(--muted); flex-shrink: 0; line-height: 1; padding-bottom: 4px; }
+
+    /* Sample lineage (Side B) */
+    .lineage { padding: 60px 40px 50px; border-top: 1px solid var(--rule); margin-top: 12px; }
+    .lineage-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+    .lineage-title { font-family: var(--font-d); font-size: clamp(28px,4vw,52px); font-weight: 700; color: var(--blue); font-style: italic; line-height: 0.95; }
+    .lineage-sub { font-size: 0.7em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .lineage-intro { font-size: 0.95em; line-height: 1.78; color: var(--muted); max-width: 640px; margin-bottom: 36px; }
+    .lineage-list { display: grid; gap: 18px; margin-bottom: 28px; }
+    .lineage-card { display: grid; grid-template-columns: 56px 1fr; gap: 20px; padding: 22px 26px; background: var(--bg2); border: 1px solid var(--rule); align-items: start; transition: border-color 0.2s; }
+    .lineage-card:hover { border-color: var(--blueD); }
+    .lineage-arrow { font-family: var(--font-m); font-size: 1.5em; color: var(--blueD); line-height: 1; }
+    .lineage-from { font-size: 0.7em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .lineage-from b { color: var(--blueD); font-weight: 500; }
+    .lineage-into { font-family: var(--font-d); font-size: 1.25em; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+    .lineage-into strong { color: var(--blue); font-style: italic; font-weight: 600; }
+    .lineage-meta { font-size: 0.7em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .lineage-note { font-size: 0.875em; line-height: 1.7; color: var(--muted); }
+    .lineage-foot { font-size: 0.85em; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 18px; line-height: 1.78; max-width: 640px; }
+
+    /* Motif matrix (Side B) */
+    .motif { padding: 36px 40px 16px; }
+    .motif-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+    .motif-title { font-family: var(--font-d); font-size: 1.625em; font-weight: 600; color: var(--blue); font-style: italic; }
+    .motif-sub { font-size: 0.65em; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+    .motif-intro { font-size: 0.9em; line-height: 1.7; color: var(--muted); max-width: 640px; margin-bottom: 22px; }
+    .motif-tablewrap { overflow-x: auto; border: 1px solid var(--rule); }
+    .motif-table { width: 100%; min-width: 640px; border-collapse: collapse; }
+    .motif-table th, .motif-table td { padding: 12px 10px; text-align: center; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-family: var(--font-u); }
+    .motif-table tr:last-child td, .motif-table tr:last-child th { border-bottom: none; }
+    .motif-table th:last-child, .motif-table td:last-child { border-right: none; }
+    .motif-table thead th { font-size: 0.6em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blueD); background: var(--bg2); font-weight: 500; padding: 14px 10px; }
+    .motif-table tbody th { text-align: left; padding: 12px 18px; font-size: 0.78em; color: var(--text); font-weight: 500; background: var(--bg2); white-space: nowrap; min-width: 180px; }
+    .mot-dot { font-size: 1.4em; line-height: 1; }
+    .mot-0 { color: oklch(0.25 0 0); }
+    .mot-1 { color: var(--blueD); opacity: 0.6; }
+    .mot-2 { color: var(--blue); opacity: 0.85; }
+    .mot-3 { color: var(--blue); }
+    .motif-legend { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 16px; font-size: 0.72em; letter-spacing: 0.05em; color: var(--muted); }
+    .motif-legend > span { display: flex; align-items: center; gap: 8px; }
+    .mot-btn { background: transparent; border: none; cursor: pointer; padding: 6px 10px; font-family: inherit; line-height: 1; font-size: 1.4em; transition: transform 0.15s, background 0.15s; border-radius: 50%; }
+    .mot-btn:not(.mot-0):hover { transform: scale(1.25); background: rgba(122,184,255,0.1); }
+    .mot-btn.mot-0:hover { transform: none; background: transparent; }
+    .mot-btn.mot-playing { background: rgba(122,184,255,0.18); animation: motPulse 1.6s infinite; }
+    @keyframes motPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(122,184,255,0.5); } 50% { box-shadow: 0 0 0 6px rgba(122,184,255,0); } }
+    .mot-cta { display: flex; align-items: center; gap: 18px; padding: 16px 22px; margin: 6px 0 22px; border: 1px solid var(--blueD); background: linear-gradient(90deg, rgba(122,184,255,0.10), rgba(122,184,255,0.02)); }
+    .mot-cta-icon { font-size: 1.5em; color: var(--blue); line-height: 1; flex-shrink: 0; animation: ctaBlink 2s infinite; }
+    @keyframes ctaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+    .mot-cta-eye { display: block; font-size: 0.7em; letter-spacing: 0.26em; text-transform: uppercase; color: var(--blue); font-weight: 500; margin-bottom: 3px; }
+    .mot-cta-text { font-family: var(--font-d); font-size: 1.125em; color: var(--text); font-style: italic; line-height: 1.3; }
+
+    .lineage-clip { display: inline-flex; align-items: center; gap: 8px; font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; padding: 7px 14px; border: 1px solid var(--blueD); background: transparent; color: var(--blue); cursor: pointer; font-family: var(--font-u); margin-top: 14px; transition: background 0.2s; }
+    .lineage-clip:hover:not(:disabled) { background: rgba(122,184,255,0.1); }
+    .lineage-clip.playing { background: rgba(122,184,255,0.16); }
+    .lineage-clip:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* History timeline (pre-album section) */
+    .history-section { min-height: 100vh; padding: 40px 40px 100px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%); position: relative; display: grid; align-content: center; gap: 18px; }
+    .history-head { max-width: 760px; }
+    .history-eyebrow { font-size: 0.65em; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .history-title { font-family: var(--font-d); font-size: clamp(28px,4.6vw,52px); font-weight: 700; line-height: 0.98; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .history-sub { font-family: var(--font-d); font-size: 0.95em; font-style: italic; color: var(--muted); margin-bottom: 10px; line-height: 1.45; }
+    .history-intro { font-size: 0.85em; line-height: 1.6; color: var(--muted); }
+    .history-track { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 6px 0 4px; gap: 8px; }
+    .history-line { position: absolute; top: 53px; left: 14px; right: 14px; height: 1px; background: var(--rule); z-index: 0; }
+    .history-node { position: relative; z-index: 1; flex: 1; background: transparent; border: none; cursor: pointer; padding: 0 4px 4px; font-family: var(--font-u); color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 10px; transition: color 0.2s; min-width: 0; }
+    .history-node:hover { color: var(--text); }
+    .history-node-icon { font-size: 1.5em; line-height: 1; filter: grayscale(0.4) opacity(0.65); transition: all 0.25s; height: 30px; display: flex; align-items: center; justify-content: center; }
+    .history-node:hover .history-node-icon { filter: none; transform: translateY(-2px) scale(1.1); }
+    .history-node.on .history-node-icon { filter: none; transform: scale(1.18); }
+    .history-node-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--era-dim, var(--rule)); transition: all 0.25s; flex-shrink: 0; }
+    .history-node:hover .history-node-dot { border-color: var(--era-color, var(--text)); transform: scale(1.2); }
+    .history-node.on .history-node-dot { background: var(--era-color, var(--blue)); border-color: var(--era-color, var(--blue)); transform: scale(1.4); box-shadow: 0 0 0 7px var(--era-ring, rgba(122,184,255,0.16)); }
+    .history-node.self .history-node-dot { background: var(--bg); border-color: var(--era-color, var(--blue)); }
+    .history-node.on.self .history-node-dot { background: var(--era-color, var(--blue)); box-shadow: 0 0 0 7px var(--era-ring, rgba(122,184,255,0.18)); }
+    .history-node-era { font-size: 0.7em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--era-dim, var(--muted)); white-space: nowrap; text-align: center; line-height: 1.3; }
+    .history-node.on .history-node-era { color: var(--era-color, var(--text)); }
+    .history-node.self .history-node-era { color: var(--era-dim, var(--blueD)); }
+    .history-node.on.self .history-node-era { color: var(--era-color, var(--blue)); }
+    .history-detail { border: 1px solid var(--era-dim, var(--rule)); padding: 20px 24px; background: linear-gradient(90deg, var(--era-bg, transparent), transparent 58%), var(--bg); transition: border-color 0.3s, background 0.3s; }
+    .history-detail.self { border-color: var(--era-dim, var(--blueD)); }
+    .history-detail-grid { display: grid; grid-template-columns: 240px 1fr; gap: 32px; align-items: start; }
+    .history-detail-era { font-family: var(--font-m); font-size: 0.95em; color: var(--era-dim, var(--blueD)); margin-bottom: 3px; letter-spacing: 0.04em; }
+    .history-detail.self .history-detail-era { color: var(--era-dim, var(--blueD)); }
+    .history-detail-label { font-family: var(--font-d); font-size: 1.4em; font-weight: 700; color: var(--era-color, var(--blue)); line-height: 1.08; margin-bottom: 4px; }
+    .history-detail.self .history-detail-label { color: var(--era-color, var(--blue)); font-style: italic; }
+    .history-detail-type { font-size: 0.65em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .history-detail-work { font-family: var(--font-d); font-size: 0.95em; font-style: italic; color: var(--text); margin-bottom: 10px; }
+    .history-detail-body { font-size: 0.85em; line-height: 1.6; color: var(--muted); }
+    .history-clip { display: inline-flex; align-items: center; gap: 8px; font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; padding: 7px 14px; border: 1px solid var(--era-dim, var(--blueD)); background: transparent; color: var(--era-color, var(--blue)); cursor: pointer; font-family: var(--font-u); transition: background 0.2s; }
+    .history-clip:hover:not(:disabled) { background: var(--era-bg, rgba(122,184,255,0.1)); }
+    .history-clip.playing { background: var(--era-ring, rgba(122,184,255,0.16)); }
+    .history-clip:disabled { opacity: 0.4; cursor: not-allowed; }
+    .history-clip.self { border-color: var(--era-dim, var(--blueD)); color: var(--era-color, var(--blue)); }
+    .history-clip.self:hover:not(:disabled) { background: var(--era-bg, rgba(122,184,255,0.1)); }
+    .history-clip.self.playing { background: var(--era-ring, rgba(122,184,255,0.16)); }
+    @media (max-width: 760px) {
+      .history-track { flex-direction: column; align-items: stretch; gap: 0; padding: 14px 0; }
+      .history-line { left: 16px; right: auto; top: 0; bottom: 0; width: 1px; height: auto; }
+      .history-node { flex-direction: row; justify-content: flex-start; align-items: center; padding: 12px 0 12px 38px; gap: 14px; position: relative; }
+      .history-node-dot { position: absolute; left: 9px; }
+      .history-node-icon { font-size: 1.35em; height: auto; }
+      .history-node-era { text-align: left; }
+      .history-detail { padding: 28px 24px; }
+      .history-detail-grid { grid-template-columns: 1fr; gap: 22px; }
+      .history-detail-label { font-size: 1.5em; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-cards, .bridge-cols { grid-template-columns: 1fr; }
+      .hero-card { grid-template-columns: 100px 1fr; gap: 18px; }
+      .hero-card-art { width: 100px; height: 100px; }
+      .bridge-divider { display: none; }
+      .framework { grid-template-columns: 1fr 1fr; }
+      .sec-head { flex-direction: column; align-items: flex-start; }
+      .sec-right { text-align: left; }
+    }
+
+    /* ─── Creative effects layer ─────────────────────────────────────── */
+
+    /* Ambient gradient backdrop — slow drifting aurora behind everything */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(60vmax 50vmax at 18% 22%, oklch(0.68 0.15 40 / 0.07), transparent 62%),
+        radial-gradient(55vmax 48vmax at 82% 78%, oklch(0.65 0.14 234 / 0.07), transparent 62%),
+        radial-gradient(40vmax 30vmax at 50% 50%, oklch(0.55 0.10 300 / 0.04), transparent 70%);
+      animation: aurora 28s ease-in-out infinite alternate;
+    }
+    @keyframes aurora {
+      0%   { transform: translate3d(-2%, -1%, 0) scale(1.02); filter: hue-rotate(0deg); }
+      50%  { transform: translate3d(2%,  2%, 0) scale(1.06); filter: hue-rotate(-8deg); }
+      100% { transform: translate3d(-1%, 3%, 0) scale(1.03); filter: hue-rotate(6deg); }
+    }
+
+    /* Film grain — extremely subtle, layered above the aurora */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      z-index: -1; pointer-events: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='4'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      opacity: 0.55;
+      mix-blend-mode: overlay;
+      animation: grain 1.6s steps(6) infinite;
+    }
+    @keyframes grain {
+      0%   { transform: translate(0, 0); }
+      20%  { transform: translate(-3%, 2%); }
+      40%  { transform: translate(2%, -3%); }
+      60%  { transform: translate(-2%, -1%); }
+      80%  { transform: translate(3%, 2%); }
+      100% { transform: translate(0, 0); }
+    }
+
+    /* Scroll progress bar — pure CSS using scroll-driven animations,
+       falls back gracefully where unsupported */
+    .scroll-progress {
+      position: fixed; top: 0; left: 0;
+      height: 2px; width: 100%;
+      transform-origin: 0 50%; transform: scaleX(0);
+      background: linear-gradient(90deg, var(--amber), oklch(0.6 0.13 320), var(--blue));
+      z-index: 9001; pointer-events: none;
+      box-shadow: 0 0 12px oklch(0.65 0.14 234 / 0.45);
+    }
+    @supports (animation-timeline: scroll()) {
+      .scroll-progress { animation: scroll-grow linear; animation-timeline: scroll(root); }
+      @keyframes scroll-grow { to { transform: scaleX(1); } }
+    }
+
+    /* Hero card hover — lift, accent edge, glow on the cover art */
+    .hero-card { transition: background 0.25s ease, transform 0.35s cubic-bezier(.2,.7,.2,1), box-shadow 0.35s ease; will-change: transform; }
+    .hero-card::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, currentColor, transparent);
+      transform: scaleX(0); transform-origin: 50% 50%;
+      transition: transform 0.5s cubic-bezier(.2,.7,.2,1);
+      opacity: 0.55; pointer-events: none;
+    }
+    .hero-card.a::after { color: var(--amber); }
+    .hero-card.b::after { color: var(--blue); }
+    .hero-card:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -28px rgba(0,0,0,0.85); }
+    .hero-card:hover::after { transform: scaleX(1); }
+
+    /* Album cover hover — 3D tilt, sheen sweep, color glow */
+    .hero-card-art { perspective: 800px; transition: transform 0.5s cubic-bezier(.2,.7,.2,1), box-shadow 0.5s ease; position: relative; }
+    .hero-card-art img { transition: transform 0.6s cubic-bezier(.2,.7,.2,1), filter 0.4s ease; backface-visibility: hidden; }
+    .hero-card-art::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.18) 50%, transparent 65%);
+      transform: translateX(-110%); pointer-events: none;
+      transition: transform 0.9s cubic-bezier(.2,.7,.2,1);
+    }
+    .hero-card:hover .hero-card-art { transform: rotateY(-6deg) rotateX(3deg); }
+    .hero-card.a:hover .hero-card-art { box-shadow: 0 14px 36px -10px oklch(0.68 0.15 40 / 0.45); }
+    .hero-card.b:hover .hero-card-art { box-shadow: 0 14px 36px -10px oklch(0.65 0.14 234 / 0.45); }
+    .hero-card:hover .hero-card-art img { transform: scale(1.06); filter: saturate(1.15) contrast(1.05); }
+    .hero-card:hover .hero-card-art::before { transform: translateX(110%); }
+
+    /* Hero card title — animated underline draw-in */
+    .hero-card-title { background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-position: 0 100%; background-size: 0% 1px; text-decoration: none; transition: background-size 0.5s cubic-bezier(.2,.7,.2,1), opacity 0.2s; }
+    .hero-card:hover .hero-card-title { background-size: 100% 1px; }
+
+    /* Spotify link — shimmer sweep on hover */
+    .spotify-link { position: relative; overflow: hidden; isolation: isolate; }
+    .spotify-link::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.25) 50%, transparent 70%);
+      transform: translateX(-120%); transition: transform 0.7s cubic-bezier(.2,.7,.2,1);
+      z-index: -1;
+    }
+    .spotify-link:hover::before { transform: translateX(120%); }
+
+    /* Nav buttons — drawing underline */
+    .nav-btn { position: relative; }
+    .nav-btn::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
+      background: currentColor; transform: scaleX(0); transform-origin: 0 50%;
+      transition: transform 0.35s cubic-bezier(.2,.7,.2,1);
+    }
+    .nav-btn:hover::after, .nav-btn.on::after { transform: scaleX(1); }
+
+    /* Track rows — accent rail slides in from the left on hover */
+    .track-top, .cortex-top { position: relative; overflow: hidden; }
+    .track-top::before, .cortex-top::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+      transform: translateX(-100%); transition: transform 0.35s cubic-bezier(.2,.7,.2,1);
+    }
+    .track-top::before { background: var(--amber); }
+    .cortex-top::before { background: var(--blue); }
+    .track-top:hover::before, .cortex-top:hover::before { transform: translateX(0); }
+
+    /* Clip / lineage / history play buttons — gentle pulse on hover */
+    .clip-btn, .lineage-clip, .history-clip { transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.2s ease, box-shadow 0.3s ease; }
+    .clip-btn:hover:not(:disabled), .lineage-clip:hover:not(:disabled), .history-clip:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px -10px currentColor;
+    }
+    .clip-btn:active:not(:disabled), .lineage-clip:active:not(:disabled), .history-clip:active:not(:disabled) { transform: translateY(0); }
+
+    /* History node hover gets a soft halo */
+    .history-node:hover .history-node-dot { box-shadow: 0 0 0 5px var(--era-bg, oklch(0.65 0.14 234 / 0.12)); }
+
+    /* Section titles — gradient text shimmer */
+    .sec-title.a { background: linear-gradient(92deg, var(--amber) 0%, oklch(0.78 0.13 50) 50%, var(--amber) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% 100%; animation: titleShimmer 9s ease-in-out infinite; }
+    .sec-title.b { background: linear-gradient(92deg, var(--blue) 0%, oklch(0.78 0.12 220) 50%, var(--blue) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% 100%; animation: titleShimmer 9s ease-in-out infinite; }
+    @keyframes titleShimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Albums intro title — slow letter-spacing breath */
+    .albums-intro-title { animation: introBreath 14s ease-in-out infinite; }
+    @keyframes introBreath {
+      0%, 100% { letter-spacing: 0; }
+      50% { letter-spacing: 0.012em; }
+    }
+
+    /* Bridge title — soft glow pulse */
+    .bridge-title { text-shadow: 0 0 0 transparent; animation: bridgeGlow 7s ease-in-out infinite; }
+    @keyframes bridgeGlow {
+      0%, 100% { text-shadow: 0 0 24px oklch(0.65 0.14 234 / 0); }
+      50%      { text-shadow: 0 0 28px oklch(0.65 0.14 234 / 0.18); }
+    }
+
+    /* ─── Custom cursor ─────────────────────────────────────────────── */
+    * { cursor: none !important; }
+    #cur-ring {
+      position: fixed; top: 0; left: 0; z-index: 99998; pointer-events: none;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid var(--text);
+      transform: translate(-50%, -50%);
+      opacity: 1;
+      transition: width .35s cubic-bezier(.2,.8,.2,1),
+                  height .35s cubic-bezier(.2,.8,.2,1),
+                  border-color .35s, border-width .3s,
+                  box-shadow .3s, border-radius .25s, opacity .25s;
+      will-change: transform;
+      mix-blend-mode: difference;
+    }
+    body.cur-out  #cur-ring { opacity: 0; }
+    body.cur-hover #cur-ring { width: 44px; height: 44px; border-width: 1.5px; }
+    /* Side A (Kendrick) → Cortex blue ring */
+    body.cur-a #cur-ring { border-color: oklch(0.65 0.14 234 / 0.85); box-shadow: 0 0 10px oklch(0.65 0.14 234 / 0.25); }
+    /* Side B (Cortex) → Kendrick amber ring */
+    body.cur-b #cur-ring { border-color: oklch(0.68 0.15 40 / 0.85); box-shadow: 0 0 10px oklch(0.68 0.15 40 / 0.25); }
+    /* Pressed */
+    body.cur-down #cur-ring { width: 18px; height: 18px; border-color: var(--text); }
+
+    /* Honor reduced-motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      body::before, body::after,
+      .sec-title.a, .sec-title.b,
+      .albums-intro-title, .bridge-title,
+      .mot-cta-icon, .mot-btn.mot-playing { animation: none !important; }
+      .hero-card, .hero-card-art, .hero-card-art img,
+      .clip-btn, .lineage-clip, .history-clip,
+      .nav-btn::after, .track-top::before, .cortex-top::before,
+      .hero-card::after, .hero-card-art::before, .spotify-link::before { transition: none !important; }
+    }
+    @media (pointer: coarse) {
+      * { cursor: auto !important; }
+      #cur-dot, #cur-ring { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const BASE = 'https://raw.githubusercontent.com/amanzivino/audio/main/';
+const ART_GKMC = BASE + 'gkmc-cover.jpg';
+const ART_TROUPEAU = BASE + 'troupeau-bleu-cover.jpg';
+const CLIPS = {
+  'sherane-a-k-a-master-splinter-s-daughter': BASE + 'Sherane%20a.k.a%20Master%20Splinters%20Daughter.mp3',
+  'bitch-don-t-kill-my-vibe':                 BASE + 'kendrick-bitch-dont-kill-my-vibe.mp3',
+  'backseat-freestyle':                       BASE + 'kendrick-backseat-freestyle.mp3',
+  'the-art-of-peer-pressure':                 BASE + 'kendrick-art-of-peer-pressure.mp3',
+  'money-trees':                              BASE + 'kendrick-money-trees.mp3',
+  'poetic-justice':                           BASE + 'kendrick-poetic-justice.mp3',
+  'good-kid':                                 BASE + 'kendrick-good-kid.mp3',
+  'm-a-a-d-city':                             BASE + 'kendrick-maad-city.mp3',
+  'swimming-pools-drank':                     BASE + 'kendrick-swimming-pools.mp3',
+  'sing-about-me-i-m-dying-of-thirst':        BASE + 'kendrick-sing-about-me.mp3',
+  'real':                                     BASE + 'kendrick-real.mp3',
+  'compton':                                  BASE + 'kendrick-compton.mp3',
+};
+const clipKey = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+// Given an existing `BASE + *.mp3` URL, derive a new filename with a deterministic suffix.
+// Example: kendrick-real.mp3 -> kendrick-real-excerpt-1.mp3
+function deriveClipUrlFromBase(baseUrl, suffix) {
+  if (!baseUrl) return '';
+  try {
+    const last = baseUrl.split('/').pop(); // encoded filename
+    const decoded = decodeURIComponent(last);
+    const withoutExt = decoded.replace(/\.mp3$/i,'');
+    const nextName = `${withoutExt}-${suffix}.mp3`;
+    return BASE + encodeURIComponent(nextName);
+  } catch (e) {
+    return '';
+  }
+}
+
+// Cortex track clips. These also act as fallbacks while motif-cell clips are being uploaded.
+const CORTEX_CLIPS = {
+  'La Rue':         BASE + 'cortex-la-rue.mp3',
+  'Automne':        BASE + 'cortex-automne.mp3',
+  "L'enfant Samba": BASE + 'cortex-lenfant-samba.mp3',
+  'Troupeau Bleu':  BASE + 'cortex-troupeau-bleu.mp3',
+  'Prélude':        BASE + 'cortex-prelude.mp3',
+  'Go Round':       BASE + 'cortex-go-round.mp3',
+  'Chanson':        BASE + 'cortex-chanson.mp3',
+  'Mary et Jeff':   BASE + 'cortex-mary-et-jeff.mp3',
+  'Huit Octobre':   BASE + 'cortex-huit-octobre.mp3',
+  'Sabbat 1':       BASE + 'cortex-sabbat-1.mp3',
+  'Sabbat 2':       BASE + 'cortex-sabbat-2.mp3',
+  'Sabbat 3':       BASE + 'cortex-sabbat-3.mp3',
+  'Madbass':        BASE + 'cortex-madbass.mp3',
+};
+
+// Motif-matrix cell clips. Upload files to /amanzivino/audio using:
+// cortex-motif-{motif-slug}-{track-slug}.mp3
+const MOTIF_SLUGS = {
+  'Electric piano figure': 'electric-piano-figure',
+  "Dalbray's vocal": 'dalbrays-vocal',
+  'Gandolfi snap drums': 'gandolfi-snap-drums',
+  'Grevet bass pocket': 'grevet-bass-pocket',
+  'Wistful / hazy mood': 'wistful-hazy-mood',
+  'Track-to-track bleed': 'track-to-track-bleed',
+};
+
+const CORTEX_TRACK_SLUGS = {
+  'La Rue': 'la-rue',
+  'Automne': 'automne',
+  "L'enfant Samba": 'lenfant-samba',
+  'Troupeau Bleu': 'troupeau-bleu',
+  'Prélude': 'prelude',
+  'Go Round': 'go-round',
+  'Chanson': 'chanson',
+  'Mary et Jeff': 'mary-et-jeff',
+  'Huit Octobre': 'huit-octobre',
+  'Sabbat 1': 'sabbat-1',
+  'Sabbat 2': 'sabbat-2',
+  'Sabbat 3': 'sabbat-3',
+  'Madbass': 'madbass',
+};
+
+function getMotifClipUrl(motifLabel, trackTitle) {
+  const motifSlug = MOTIF_SLUGS[motifLabel] || clipKey(motifLabel);
+  const trackSlug = CORTEX_TRACK_SLUGS[trackTitle] || clipKey(trackTitle);
+  return BASE + `cortex-motif-${motifSlug}-${trackSlug}.mp3`;
+}
+
+// Clips for the "Where This Sound Went" cards.
+const SAMPLE_CLIPS = {
+  'One Beer':           BASE + 'madvillain-one-beer.mp3',
+  'Der Elfenbeinturm':  BASE + 'morlockk-der-elfenbeinturm.mp3',
+  'Circles':            BASE + 'kanye-circles.mp3',
+};
+
+const STAGES = [
+  { id:'lust', label:'LUST', tracks:[
+    { num:1, name:"Sherane a.k.a. Master Splinter's Daughter", url:'https://open.spotify.com/track/7zdORPbuIBkZHCJXl9J2e5', short:"K.Dot takes his mom's van down Rosecrans to see a girl from a party. He knows it could get messy. He still goes.", lyrics:"Family history of gangbangin' did make me skeptical\nBut not enough to stop me from gettin' a nut\n\nSo now I'm down Rosecrans in a Caravan\n\nI pulled up, a smile on my face, and then I see\nTwo niggas, two black hoodies, I froze as my phone rang", analysis:"The album begins with one teenage choice: go see Sherane. When K.Dot pulls up and sees two strangers in black hoodies, his phone rings. His mom is calling. He does not answer. That missed call becomes the first thread the whole record keeps tugging on." },
+    { num:2, name:"Bitch, Don't Kill My Vibe", url:'https://open.spotify.com/track/4Pwjz3DfvfQWV0rO2V8jyh', short:"Before the night gets louder, K.Dot tries to hold onto himself.", lyrics:"I am a sinner who's probably gonna sin again\nLord forgive me\n\nYou can see that my city found me\nThen put me on stages", analysis:"This feels like a breath before the story speeds up. K.Dot knows himself well enough to see the danger coming, but not well enough to stay out of it." },
+    { num:3, name:"Backseat Freestyle", url:'https://open.spotify.com/track/6fAyRZ0GHuuvSOEIOwi58N', short:"A burst of teenage fantasy: money, power, sex, Compton.", lyrics:"All my life I want money and power\nRespect my mind or die from lead shower\n\nC-O-M-P-T-O-N, my city, mobbin' in the street", analysis:"This is not wise Kendrick looking back. This is the younger version talking big from the backseat. The point is how real that fantasy feels before the consequences arrive." },
+  ]},
+  { id:'crime', label:'CRIME', tracks:[
+    { num:4, name:"The Art of Peer Pressure", url:'https://open.spotify.com/track/2PieESXphabz5AkALFS08X', short:"Four friends, a white Toyota, a bad idea. K.Dot says this is not who he usually is, but tonight he follows.", lyrics:"Usually I'm drug-free, but, shit, I'm with the homies\n\nMe and my niggas four deep in a white Toyota\nA quarter tank of gas, one pistol, an orange soda\n\nDrop K. Dot off at his mama van at the park\n'Cause I know he tryna fuck on Sherane tonight", analysis:"Even the robbery bends back toward Sherane. The homies will drop him near the van after the job, so desire and danger end up sharing the same route." },
+    { num:5, name:"Money Trees", url:'https://open.spotify.com/track/2HbKqm4o0w5wEeEFXm2sD4', short:"The robbery works, briefly. Then the album reminds you what Compton takes back.", lyrics:"Home invasion was persuasive\nFrom nine-to-five I know it's vacant\n\nTwo bullets in my Uncle Tony head\n\nEverybody gon' respect the shooter\nBut the one in front of the gun lives forever", analysis:"The win does not get to stay a win. Money shows up, grief follows right behind it, and the album keeps that tradeoff in view." },
+  ]},
+  { id:'violence', label:'VIOLENCE', tracks:[
+    { num:6, name:"Poetic Justice", url:'https://open.spotify.com/track/1zCi4cVFqe6ja16MeGZKRN', short:"Sherane was not just a crush. The trip turns into a setup, and K.Dot gets jumped.", lyrics:"Ayy, you out here for Sherane, homie?\nI don't care who this nigga over here for\nIf he don't tell me where he from, it's a wrap!\n\nGet out the car 'fore I snatch you out that motherfucker", analysis:"The love story opens a trap door. Sherane's neighborhood, her people, and the city's rules are all waiting when he arrives." },
+    { num:7, name:"good kid", url:'https://open.spotify.com/track/3903Tbix9PdoculpJLikHf', short:"After the beating, K.Dot just tries to get home. First gangs press him, then the police do.", lyrics:"No better picture to paint than me walkin' from Bible study\n\nAnd called his homies because he had said he noticed my face\n\nWhat am I 'posed to do when the topic is red or blue\nAnd you understand that I ain't?", analysis:"The lack of profanity matters. He is not performing toughness here; he is exposed, young, and stuck between forces that do not care how careful he is trying to be." },
+  ]},
+  { id:'death', label:'DEATH', tracks:[
+    { num:8, name:"m.A.A.d city", url:'https://open.spotify.com/track/439TlnnznSiBbQbgXiBqAd', short:"The violence around him suddenly feels older than one night. Even a blunt carries danger.", lyrics:"Man down, where you from, nigga?\nFuck who you know, where you from, my nigga?\n\nYou killed my cousin back in '94, fuck your truce\n\nCocaine laced in marijuana\nAnd they wonder why I rarely smoke now\nImagine if your first blunt had you foaming at the mouth", analysis:'The "where you from" chant comes back louder here. It feels less like one confrontation and more like a loop the city keeps replaying.' },
+    { num:9, name:"Swimming Pools (Drank)", url:'https://open.spotify.com/track/3DFjTEueCBYqg7YE05eUJP', short:"The crew drinks to shake off the night. Then the skit cuts through everything: Dave is dead.", lyrics:"Nigga, why you babysittin' only two or three shots?\nI'ma show you how to turn it up a notch\n\nOkay, now open your mind up and listen me, Kendrick\nI'm your conscience\n\nD-, say somethin', D-?\nThese bitch ass niggas killed my brother", analysis:"It plays like a party record until you listen closer. One voice keeps pulling him deeper in; another is trying to get him out alive." },
+  ]},
+  { id:'reflection', label:'REFLECTION', tracks:[
+    { num:10, name:"Sing About Me, I'm Dying of Thirst", url:'https://open.spotify.com/track/0sd6BRTa0O96tfEbFGhJF9', short:"Three voices sit with death, memory, and what it means to be remembered.", lyrics:"Lord God, I come to you a sinner\nAnd I humbly repent for my sins\n\nIf I die before your album drops,\nI hope you sing about me", analysis:"The prayer from the opening comes back almost like a checkpoint. The album has traveled a long way, but spiritually it is still circling the same question." },
+  ]},
+  { id:'resolution', label:'RESOLUTION', tracks:[
+    { num:11, name:"Real", url:'https://open.spotify.com/track/7pdCmGogZHZH3Xv7LnqVrH', short:"The word 'real' gets stripped down until it means responsibility, love, and self-respect.", lyrics:"What love got to do with it when you don't love yourself?\n\nReal is responsibility\nReal is God", analysis:'His dad gives the album its plainest answer: being real is not about proving yourself to the street. It is about taking care of your life.' },
+    { num:12, name:"Compton", url:'https://open.spotify.com/track/6q0zsagVIiAn9zb7vqTmZi', short:'"Mom, I\'m finna use the van real quick." The same van returns, but K.Dot is different now.', lyrics:"Mom, I'm finna use the van real quick\n\nCompton, ain't no city quite like mine", analysis:"The van from Track 1 comes back, but the meaning has changed. What began as a reckless errand now feels like a way out." },
+  ]},
+];
+
+function getTrackClipUrlByNum(trackNum) {
+  for (const stage of STAGES) {
+    const t = stage.tracks.find(x => x.num === trackNum);
+    if (!t) continue;
+    const key = clipKey(t.name);
+    return CLIPS[key] || '';
+  }
+  return '';
+}
+
+const CORTEX = [
+  { num:1,  clipKey:'La Rue',          title:'La Rue',                  url:'https://open.spotify.com/track/6lzDycd60SJ7H8y6wuESGl', role:'Where it begins',          badge:'Palette',   short:"The record opens by showing you its whole palette: bass, drums, electric piano, and Dalbray's voice hovering above it.", full:"Grevet's bass settles in first. Gandolfi's drums snap around it. Dalbray floats over the top. In a few minutes, Cortex gives you the room the rest of the album will keep returning to." },
+  { num:2,  clipKey:'Automne',         title:'Automne (Colchiques)',     url:'https://open.spotify.com/track/5Rt5pomA6CvKTuCllwRY74', role:'The hush after',           badge:'Hush',      short:"After the opener, the band suddenly gets quiet. Dalbray carries a children's melody almost by herself.", full:"A traditional French song becomes something small and close. The band barely touches it, and that restraint matters. The album is not only groove; it knows how to make space too." },
+  { num:3,  clipKey:"L'enfant Samba",  title:"L'enfant Samba",           url:'https://open.spotify.com/track/5uM2TbV57PabdmqUTJa1pG', role:'Same world, different rhythm', badge:'Range',  short:"The rhythm turns toward samba, but the room still feels familiar: crisp drums, warm piano, hazy air.", full:"The groove changes shape, but the record's identity does not. Cortex can move into a different rhythm without leaving their sound world." },
+  { num:4,  clipKey:'Troupeau Bleu',   title:'Troupeau Bleu',            url:'https://open.spotify.com/track/2DTHWr5NK1igQZxctpYTA9', role:'The center of gravity',    badge:'Anchor',    short:"The title track steadies the album. It feels like the center everything else has been leaning toward.", full:"Troupeau Bleu brings the record back to its core. The rhythm section is relaxed but sure of itself, and Dalbray hangs above it like a memory. This is the sound the rest of the album keeps protecting." },
+  { num:5,  clipKey:'Prélude',         title:'Prélude à Go Round',       url:'https://open.spotify.com/track/7qnSmz4abtOXKuYhaRYuPv', role:'The trick structure',      badge:'Segue',     short:"A slow build opens up, then slips straight into the piano piece it has been quietly aiming for.", full:"The Prelude gathers tension without making a big announcement. Then it dissolves into Go Round. On this album, songs do not always stop; sometimes they simply become the next thing." },
+  { num:6,  clipKey:'Go Round',        title:'Go Round',                 url:'https://open.spotify.com/track/3CKsKWOasAzsjlhdWk9DGs', role:'The afterglow',            badge:'Motif',     short:"A small piano figure appears, light but important, echoing La Rue and pointing toward Chanson d'un jour d'hiver.", full:"This is one of the album's quietest connective pieces. The piano figure feels modest, but it becomes a hinge between earlier and later tracks." },
+  { num:7,  clipKey:'Chanson',         title:"Chanson d'un jour d'hiver", url:'https://open.spotify.com/track/49ECKlsOXqyNXydiNCS2Md', role:'The melancholic peak',    badge:'Peak',      short:"Out of that quiet comes the album's most wistful moment, the hazy peak it has been drifting toward.", full:"It is soft and sad, but the groove never disappears. Cortex lets the album feel vulnerable without letting it lose its pulse." },
+  { num:8,  clipKey:'Mary et Jeff',    title:'Mary et Jeff',             url:'https://open.spotify.com/track/0ztpWjYYFWQaw5DnPDIYkl', role:'The funk break',          badge:'Pocket',    short:"The mood lifts into a bright jazz-funk pocket, with keys and bass moving around each other.", full:"It is brief, but it feels alive from every angle. Mion's electric piano and Grevet's bass do not just lock in; they circle each other. You can hear why producers kept coming back to this record decades later." },
+  { num:9,  clipKey:'Huit Octobre',    title:'Huit Octobre 1971',        url:'https://open.spotify.com/track/2CsnpBAB8VQMTyPuws57ao', role:'The climax that holds',   badge:'Limit',     short:"Then the album opens wide: tempo shifts, bigger drama, and still that unmistakable Cortex haze.", full:"Huit Octobre moves in sections, with sharp turns and restless drums. Even when the track gets bigger and stranger, it never feels like it has left the album." },
+  { num:10, clipKey:'Sabbat 1',        title:'Sabbat, pt. 1',            url:'https://open.spotify.com/track/6RZYzVk2IG0PhhF3PMbLSQ', role:'The threshold',           badge:'Threshold', short:"After the album's biggest moment, a short chant opens the Sabbat suite like a doorway.", full:"It is short, almost like a ritual breath before the suite begins. The track does not explain itself; it changes the air." },
+  { num:11, clipKey:'Sabbat 2',        title:'Sabbat, pt. 2',            url:'https://open.spotify.com/track/629ribrku1CI6lYRTXs9NF', role:'The trance',              badge:'Trance',    short:"The suite drops into its longest movement, with drums and bass pushing the album into darker ground.", full:"This is the suite at full weight. The drums feel more like a march, the bass gets heavier, and the piano starts tracing shadows the earlier tracks only hinted at." },
+  { num:12, clipKey:'Sabbat 3',        title:'Sabbat, pt. 3',            url:'https://open.spotify.com/track/0CycZ8pvvdqSyBxJLapOOI', role:'The dissolve',            badge:'Coda',      short:"Thirty-one seconds, then it is gone. The Sabbat suite exhales and disappears.", full:"It is barely more than a closing gesture, but it matters. The suite does not end with a grand statement; it fades like smoke." },
+  { num:13, clipKey:'Madbass',         title:'Madbass',                  url:'https://open.spotify.com/track/5rFXbyxDXQ8m5Dh1VuNiGq', role:'The last word',           badge:'Closer',    short:"Grevet's bass gets the last word, and the record drifts back into the fog it came from.", full:"The closer lets the bass step forward while everything else hangs back. It feels right: the album ends with the instrument that has been quietly holding it together." },
+];
+
+const PINS = [
+  { id:'rosecrans', lat:33.9019, lng:-118.2655, name:'Rosecrans & Avalon', mapLabel:'Rosecrans & Avalon', labelAnchor:[-10,18], trackNum:1, trackSong:"Sherane a.k.a. Master Splinter's Daughter", body:"This is where the first bad decision starts moving: K.Dot in the Caravan, heading toward Sherane and whatever waits there." },
+  { id:'gonzales', lat:33.9048, lng:-118.2390, name:'Gonzales Park', mapLabel:'Gonzales Park', labelAnchor:[66,48], trackNum:4, trackSong:'The Art of Peer Pressure', body:"After the robbery, this is where the night points him back toward Sherane. The map makes the connection feel physical." },
+  { id:'louis', lat:33.9042, lng:-118.2068, name:'Louis Burgers (Rosecrans & Builis)', mapLabel:'Louis Burgers', labelAnchor:[142,18], trackNum:5, trackSong:'Money Trees', body:"Across from Lueders Park, this is the loss that shadows the robbery's short-lived win. The album never lets gain and grief sit far apart." },
+  { id:'dominguez', lat:33.8736, lng:-118.2443, name:'Sherane\'s Side (Paramount area)', mapLabel:"Sherane's Side", labelAnchor:[66,-10], trackNum:6, trackSong:'Poetic Justice', body:"K.Dot comes here chasing Sherane and walks into the setup. The love story turns into the thing that exposes him." },
+  { id:'central', lat:33.8958, lng:-118.2245, name:'Central Compton', mapLabel:'Central Compton', labelAnchor:[66,-10], trackNum:8, trackSong:'m.A.A.d city', body:"This is the album's pressure point: old beefs, gang lines, police, grief, and memory packed into a few square miles." },
+];
+
+const CHARS = [
+  { name:'K.Dot (Kendrick Lamar)', role:'Protagonist / younger self', desc:"K.Dot is Kendrick's younger self in the story: impulsive, observant, scared, proud, and still figuring out how to survive one chaotic day in Compton." },
+  { name:'Sherane', role:'Catalyst', desc:"Sherane is the reason K.Dot leaves in the van. She is also the doorway into the album's danger." },
+  { name:'Dave', role:'Friend / turning point', desc:'A close friend whose death turns the night from reckless to irreversible.' },
+  { name:"Demetrius & Sherane's crew", role:'Antagonistic pressure', desc:'They are the pressure of neighborhood politics made personal.' },
+  { name:"Kendrick's parents", role:'Moral anchor', desc:'Their calls keep pulling the album back toward home, care, and consequence.' },
+  { name:'The Homies', role:'Social force', desc:'They are not just villains. They are the pull of belonging, even when belonging costs too much.' },
+];
+
+const FRAMEWORK = {
+  narrative:[
+    {lbl:'Characters',desc:'People return, and every return changes what the night means'},
+    {lbl:'Geography',desc:'The places matter. The story moves because the city moves it'},
+    {lbl:'Voicemails',desc:'Family calls keep interrupting the chaos with love, worry, and memory'},
+    {lbl:'Skits',desc:'The skits make the album feel lived through, not just listened to'},
+  ],
+  sonic:[
+    {lbl:'Instrumental palette',desc:'A small set of sounds keeps the album in one room'},
+    {lbl:'Mood field',desc:'The mood does not reset; it keeps getting thicker'},
+    {lbl:'Segues & bleeds',desc:'Tracks blur into one another instead of closing cleanly'},
+    {lbl:'Recurring motifs',desc:'Tiny musical ideas come back like memories'},
+  ],
+};
+
+// The day, in calls — voicemails, skits, and conversations that knit the songs together.
+const VOICEMAILS = [
+  { num:1, time:'4:48 PM',  from:'Mom',                dir:'Voicemail',  track:1,  song:"Sherane",
+    text:"Where's the van? I gotta pick up your auntie. Call me back, baby.",
+    note:"K.Dot is outside Sherane's when the danger becomes real. The phone rings, and he lets it go." },
+  { num:2, time:'5:32 PM',  from:'The Homies',         dir:'Skit',       track:4,  song:"The Art of Peer Pressure",
+    text:"Drop K.Dot off at his mama's van at the park — he tryna fuck on Sherane tonight.",
+    note:"Even after the robbery, the night keeps bending back toward Sherane." },
+  { num:3, time:'6:11 PM',  from:'Mom',                dir:'Voicemail',  track:5,  song:"Money Trees",
+    text:"Boy, where you at? Bring me back a Domino's pizza when you come.",
+    note:"Another missed call, still ordinary and loving, which makes the night feel even more dangerous." },
+  { num:4, time:'7:24 PM',  from:"Sherane's crew",     dir:'In person',  track:6,  song:"Poetic Justice",
+    text:"Ay, you out here for Sherane, homie? Tell me where you from — if you don't, it's a wrap.",
+    note:"The drive to Sherane lands here. What looked like romance becomes the setup." },
+  { num:6, time:'9:47 PM',  from:'A friend',           dir:'Skit',       track:9,  song:"Swimming Pools",
+    text:"D—, say somethin', D—? ...These bitch ass niggas killed my brother.",
+    note:"Dave's death breaks the party open. After this, the album cannot pretend anymore." },
+  { num:7, time:'10:33 PM', from:'K.Dot (himself)',    dir:'Prayer',     track:10, song:"Sing About Me",
+    text:"Lord God, I come to you a sinner, and I humbly repent for my sins.",
+    note:"The prayer returns, and suddenly the whole album feels like the road between those two moments." },
+  { num:8, time:'11:08 PM', from:'Dad',                dir:'Voicemail',  track:11, song:"Real",
+    text:"Real is responsibility. Real is God. What love got to do with it when you don't love yourself?",
+    note:"This is the message that finally cuts through: plain advice, no performance." },
+  { num:9, time:'11:54 PM', from:'K.Dot → Mom',        dir:'Outgoing',   track:12, song:"Compton",
+    text:"Mom, I'm finna use the van real quick.",
+    note:"The same van returns, but now he is the one making the call. The loop closes." },
+];
+
+// Where Troupeau Bleu's sound went — sound continuity leaking out of the album.
+const SAMPLES = [
+  { artist:'Madvillain (MF DOOM × Madlib)', track:'One Beer',      album:'Madvillainy',         year:2004, src:'Huit Octobre 1971',
+    note:"Madlib hears the same passage and turns it into a loose, shuffling DOOM beat. The source still peeks through." },
+  { artist:'Morlockk Dilemma & Dexter feat. Audio88', track:'Der Elfenbeinturm', album:'Der Elfenbeinturm', year:2013, src:'Sabbat 1',
+    note:"The chant-like pulse of Sabbat pt. 1 resurfaces here — the same ritual stillness, now carrying German-language bars over it." },
+  { artist:'Kanye West',                    track:'Circles',       album:'Bully',               year:2025, src:'Huit Octobre 1971',
+    note:"The same eight bars keep resurfacing. By the time they show up here, the point is clear: the album's texture is still moving through new records." },
+];
+
+// Motif recurrence on Troupeau Bleu. 0 = absent · 1 = subtle · 2 = present · 3 = central.
+const MOTIFS = {
+  cols: ['La Rue', 'Automne', "L'enfant Samba", 'Troupeau Bleu', 'Prélude', 'Go Round', 'Chanson', 'Mary et Jeff', 'Huit Octobre', 'Sabbat 1', 'Sabbat 2', 'Sabbat 3', 'Madbass'],
+  rows: [
+    { lbl:'Electric piano figure',  cells:[3,1,1,2,1,3,3,3,1,0,1,0,1] },
+    { lbl:"Dalbray's vocal",        cells:[3,3,2,3,0,0,3,0,2,1,1,0,0] },
+    { lbl:'Gandolfi snap drums',    cells:[3,0,3,3,3,0,2,3,3,1,3,1,2] },
+    { lbl:'Grevet bass pocket',     cells:[3,1,3,3,3,1,2,3,3,1,3,1,3] },
+    { lbl:'Wistful / hazy mood',    cells:[2,3,1,3,2,3,3,1,2,2,2,2,2] },
+    { lbl:'Track-to-track bleed',   cells:[0,1,1,1,3,3,1,1,1,3,3,3,0] },
+  ],
+};
+
+// A thousand-year history of "this is one piece," ending at the two albums on this page.
+const TIMELINE = [
+  {
+    era:'Pre-1000 AD',
+    icon:'🕯️',
+    label:'Ritual Continuity',
+    color:'oklch(0.74 0.11 86)',
+    dim:'oklch(0.52 0.08 86)',
+    ring:'oklch(0.74 0.11 86 / 0.16)',
+    bg:'oklch(0.74 0.11 86 / 0.07)',
+    type:'Repetition · Monophony',
+    work:'Gregorian chant',
+    body:"A single melodic line returns again and again. The continuity comes from ritual: the same modes, the same shapes, the same sound carried across generations. Before harmony, repetition is the thread.",
+    clipKey:'history-gregorian',
+    clipUrl: BASE + 'history-gregorian.mp3',
+  },
+  {
+    era:'1100–1300',
+    icon:'⛪',
+    label:'Polyphonic Continuity',
+    color:'oklch(0.68 0.13 286)',
+    dim:'oklch(0.49 0.1 286)',
+    ring:'oklch(0.68 0.13 286 / 0.16)',
+    bg:'oklch(0.68 0.13 286 / 0.07)',
+    type:'Overlapping Lines',
+    work:'Notre Dame school · Organum',
+    body:"Léonin and Pérotin build upward from chant, holding one voice steady while others move above it. Now the piece stays together because different lines share the same space. Continuity becomes something you can hear vertically.",
+    clipKey:'history-organum',
+    clipUrl: BASE + 'history-organum.mp3',
+  },
+  {
+    era:'1400–1600',
+    icon:'📜',
+    label:'Vocal Polyphony',
+    color:'oklch(0.7 0.14 350)',
+    dim:'oklch(0.5 0.1 350)',
+    ring:'oklch(0.7 0.14 350 / 0.16)',
+    bg:'oklch(0.7 0.14 350 / 0.07)',
+    type:'Motif Recurrence',
+    work:'Josquin des Prez · motets',
+    body:"A small musical idea starts passing from voice to voice. It returns, flips, and threads the piece together. That logic, a motif becoming the glue, is the same kind of listening Cortex asks for centuries later.",
+    clipKey:'history-josquin',
+    clipUrl: BASE + 'history-josquin.mp3',
+  },
+  {
+    era:'1722',
+    icon:'🎹',
+    label:'Tonal Continuity',
+    color:'oklch(0.72 0.12 195)',
+    dim:'oklch(0.5 0.09 195)',
+    ring:'oklch(0.72 0.12 195 / 0.16)',
+    bg:'oklch(0.72 0.12 195 / 0.07)',
+    type:'Keyboard · 24 Preludes & Fugues',
+    work:'Bach · The Well-Tempered Clavier, Book I',
+    body:"Bach gives every major and minor key its own prelude and fugue. Each piece stands alone, but together they feel like a complete map. It is not an album, but it thinks like one: many parts held inside one larger idea.",
+    clipKey:'history-bach',
+    clipUrl: BASE + 'history-bach.mp3',
+  },
+  {
+    era:'1750–1800',
+    icon:'🎼',
+    label:'Sonata Continuity',
+    color:'oklch(0.72 0.14 145)',
+    dim:'oklch(0.5 0.1 145)',
+    ring:'oklch(0.72 0.14 145 / 0.16)',
+    bg:'oklch(0.72 0.14 145 / 0.07)',
+    type:'Thematic Development',
+    work:'Mozart · piano sonatas',
+    body:"A theme appears, changes shape, moves keys, and comes back altered. The listener is asked to remember where it began. Continuity is not just return anymore; it is change that still feels connected.",
+    clipKey:'history-mozart',
+    clipUrl: BASE + 'history-mozart.mp3',
+  },
+  {
+    era:'1975 →',
+    icon:'💿',
+    label:'Album Continuity',
+    color:'oklch(0.65 0.14 234)',
+    dim:'oklch(0.42 0.11 234)',
+    ring:'oklch(0.65 0.14 234 / 0.18)',
+    bg:'oklch(0.65 0.14 234 / 0.08)',
+    type:'Motifs · Palette',
+    work:'Cortex · Troupeau Bleu',
+    body:"The LP gives popular music a new kind of canvas: thirty or forty minutes that can be shaped as one experience. Cortex use that space by returning to the same voice, keys, drums, bass, and mood until the album feels like one continuous room.",
+    clipKey:'cortex-troupeau-bleu',
+    clipUrl: BASE + 'cortex-troupeau-bleu.mp3',
+    self: true,
+  },
+];
+
+// Inline annotations for Side A pull-quote lyrics. Keys are TrackRow `track.name`.
+const ANNOTATIONS = {
+  "Sherane a.k.a. Master Splinter's Daughter": [
+    { phrase:'Caravan',                       note:"This comes back at the end, when the same van means something different. The loop closes quietly." },
+    { phrase:'phone rang',                    note:"The first missed call. His mom is trying to reach him, and the album's family thread starts here." },
+    { phrase:"Family history of gangbangin'", note:"This connects to Track 8, where old violence comes back into the present. Nothing here starts from zero." },
+  ],
+  "The Art of Peer Pressure": [
+    { phrase:'mama van',         note:"The same family van is now tied to the crime. Home and danger are sitting in the same seat." },
+    { phrase:'Sherane tonight',  note:"The night keeps pointing back to Sherane. Track 6 shows why that matters." },
+  ],
+  "Money Trees": [
+    { phrase:'Home invasion',    note:"This is the robbery's payoff, but the album does not let it feel clean." },
+    { phrase:'Uncle Tony head',  note:"The gain and the loss arrive together. That is the trade the album keeps showing us." },
+  ],
+  "Poetic Justice": [
+    { phrase:'out here for Sherane', note:"This points straight back to the opening drive. Sherane was never separate from the danger." },
+    { phrase:'where he from',        note:"This question gets louder on Track 8, where it becomes almost impossible to escape." },
+  ],
+  "good kid": [
+    { phrase:'red or blue', note:"Gang colors. K.Dot is trying to move through a city that keeps forcing him to choose a side." },
+  ],
+  "m.A.A.d city": [
+    { phrase:'where you from',                note:"The same pressure from Track 7 returns, only louder. This time there is nowhere peaceful to stand." },
+    { phrase:"killed my cousin back in '94",  note:"This reaches back to Track 1. The violence has history, and K.Dot is born into it." },
+  ],
+  "Sing About Me, I'm Dying of Thirst": [
+    { phrase:'I come to you a sinner', note:"The opening prayer returns, and the album suddenly feels like everything that happened between those two pleas." },
+  ],
+  "Compton": [
+    { phrase:'use the van real quick', note:"The vehicle from the first track comes back. He made it home, but not unchanged." },
+  ],
+};
+
+// Wraps annotated phrases inside a lyric string with hover-popup spans.
+function renderAnnotated(text, annotations) {
+  if (!annotations || annotations.length === 0) return text;
+  let nodes = [text];
+  let idx = 0;
+  annotations.forEach(a => {
+    const next = [];
+    nodes.forEach(node => {
+      if (typeof node !== 'string') { next.push(node); return; }
+      const segs = node.split(a.phrase);
+      segs.forEach((s, i) => {
+        if (s) next.push(s);
+        if (i < segs.length - 1) {
+          next.push(
+            <span key={'anno-' + (idx++)} className="anno" tabIndex="0">
+              {a.phrase}
+              <span className="anno-pop">{a.note}</span>
+            </span>
+          );
+        }
+      });
+    });
+    nodes = next;
+  });
+  return nodes;
+}
+
+const PLAYBACK_THEMES = {
+  kendrick: {
+    accent: 'oklch(0.68 0.15 40)',
+    bg: 'linear-gradient(90deg, rgba(55,31,17,0.94), rgba(9,8,11,0.94))',
+    border: 'rgba(192,120,48,0.42)',
+    label: 'rgba(192,120,48,0.72)',
+    text: 'rgba(255,236,214,0.84)',
+  },
+  cortex: {
+    accent: 'oklch(0.65 0.14 234)',
+    bg: 'linear-gradient(90deg, rgba(13,34,60,0.94), rgba(9,8,11,0.94))',
+    border: 'rgba(122,184,255,0.46)',
+    label: 'rgba(122,184,255,0.72)',
+    text: 'rgba(222,238,255,0.86)',
+  },
+};
+
+function getKendrickTrackByNum(trackNum) {
+  return STAGES.flatMap(stage => stage.tracks).find(track => track.num === trackNum);
+}
+
+function getCortexTrackBySlug(trackSlug) {
+  return CORTEX.find(track => {
+    const slugs = [
+      CORTEX_TRACK_SLUGS[track.clipKey],
+      clipKey(track.clipKey),
+      clipKey(track.title),
+    ].filter(Boolean);
+    return slugs.includes(trackSlug);
+  });
+}
+
+function getEraPlaybackTheme(era) {
+  return {
+    accent: era.color,
+    bg: `linear-gradient(90deg, ${era.bg}, rgba(9,8,11,0.94))`,
+    border: era.dim,
+    label: era.dim,
+    text: era.color,
+  };
+}
+
+function getPlaybackMeta(key) {
+  const fallback = { title: 'Now playing', theme: PLAYBACK_THEMES.kendrick };
+  if (!key) return fallback;
+
+  const kendrickTrack = STAGES
+    .flatMap(stage => stage.tracks)
+    .find(track => {
+      const slug = clipKey(track.name);
+      return key === slug || key.startsWith(slug + '-excerpt-');
+    });
+  if (kendrickTrack) {
+    return { title: 'Kendrick Lamar — ' + kendrickTrack.name, theme: PLAYBACK_THEMES.kendrick };
+  }
+
+  if (key.startsWith('vm-')) {
+    const vmNum = Number(key.replace('vm-', ''));
+    const vm = VOICEMAILS.find(item => item.num === vmNum);
+    const track = vm ? getKendrickTrackByNum(vm.track) : null;
+    if (track) return { title: 'Kendrick Lamar — ' + track.name, theme: PLAYBACK_THEMES.kendrick };
+    if (vm) return { title: 'Kendrick Lamar — ' + vm.song, theme: PLAYBACK_THEMES.kendrick };
+  }
+
+  if (key.startsWith('cortex-motif-')) {
+    const track = CORTEX.find(item => {
+      const trackSlug = CORTEX_TRACK_SLUGS[item.clipKey] || clipKey(item.clipKey);
+      return key.endsWith('-' + trackSlug);
+    });
+    if (track) return { title: 'Cortex — ' + track.title, theme: PLAYBACK_THEMES.cortex };
+  }
+
+  if (key.startsWith('cortex-')) {
+    const trackSlug = key.replace(/^cortex-/, '');
+    const track = getCortexTrackBySlug(trackSlug);
+    if (track) return { title: 'Cortex — ' + track.title, theme: PLAYBACK_THEMES.cortex };
+  }
+
+  if (key.startsWith('sample-')) {
+    const sample = SAMPLES.find(item => 'sample-' + clipKey(item.track) === key);
+    if (sample) return { title: sample.artist + ' — ' + sample.track, theme: PLAYBACK_THEMES.cortex };
+  }
+
+  if (key.startsWith('history-')) {
+    const era = TIMELINE.find(item => item.clipKey === key);
+    if (era) return { title: era.work, theme: getEraPlaybackTheme(era) };
+  }
+
+  return fallback;
+}
+
+// ── COMPONENTS ────────────────────────────────────────────────────────────────
+
+function Nav() {
+  const [stuck, setStuck] = useState(false);
+  const [active, setActive] = useState('');
+  useEffect(() => {
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
+      setStuck(window.scrollY > 60);
+      for (const id of ['bridge','side-b','side-a','history']) {
+        const el = document.getElementById(id);
+        if (el && window.scrollY >= el.offsetTop - 120) { setActive(id); return; }
+      }
+      setActive('');
+    };
+    const fn = () => { if (!raf) raf = requestAnimationFrame(compute); };
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => { window.removeEventListener('scroll', fn); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+  const go = id => { const el = document.getElementById(id); if (el) window.scrollTo({top:el.offsetTop-60,behavior:'smooth'}); };
+  const labels = { 'history':'History', 'side-a':'Side A', 'side-b':'Side B', 'bridge':'Bridge' };
+  return (
+    <nav className={'nav'+(stuck?' stuck':'')}>
+      <button className="nav-logo" onClick={() => window.scrollTo({top:0,behavior:'smooth'})}>A·C</button>
+      <div className="nav-links">
+        {['history','side-a','side-b','bridge'].map(id => (
+          <button key={id} className={'nav-btn'+(active===id?' on':'')} onClick={() => go(id)}>
+            {labels[id]}
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function A11y() {
+  const [open, setOpen] = useState(false);
+  const [larger, setLarger] = useState(false);
+  const [contrast, setContrast] = useState(false);
+  useEffect(() => {
+    document.getElementById('root').style.zoom = larger ? '1.18' : '1';
+  }, [larger]);
+  useEffect(() => {
+    document.body.classList.toggle('hi-contrast', contrast);
+  }, [contrast]);
+  return (
+    <>
+      {open && (
+        <div className="a11y-panel">
+          <div className="a11y-title">Accessibility</div>
+          <div className="a11y-row">
+            <span className="a11y-label">Text size</span>
+            <div className="a11y-btns">
+              <button className={'a11y-opt'+(!larger?' sel':'')} onClick={() => setLarger(false)}>Normal</button>
+              <button className={'a11y-opt'+(larger?' sel':'')} onClick={() => setLarger(true)}>Larger</button>
+            </div>
+          </div>
+          <div className="a11y-row">
+            <span className="a11y-label">Contrast</span>
+            <div className="a11y-btns">
+              <button className={'a11y-opt'+(!contrast?' sel':'')} onClick={() => setContrast(false)}>Normal</button>
+              <button className={'a11y-opt'+(contrast?' sel':'')} onClick={() => setContrast(true)}>High</button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button className="a11y-btn" onClick={() => setOpen(o => !o)}>Aa</button>
+    </>
+  );
+}
+
+function TrackRow({ track, badge, playing, onToggle }) {
+  const [open, setOpen] = useState(false);
+  const key = clipKey(track.name);
+  const trackUrl = CLIPS[key] || '';
+  const excerpts = String(track.lyrics).split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+  return (
+    <div className="track-item">
+      <div className="track-top" onClick={() => setOpen(o => !o)}>
+        <div className="track-num">{String(track.num).padStart(2,'0')}</div>
+        <div>
+          <a className="track-name-link" href={track.url} target="_blank" rel="noopener" onClick={e => e.stopPropagation()}>{track.name}</a>
+          <div className="track-short">{track.short}</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
+          <div className="track-badge">{badge}</div>
+          <div className="track-toggle">{open?'−':'+'}</div>
+        </div>
+      </div>
+      {open && (
+        <div className="track-expand">
+          {excerpts.map((excerpt, idx) => {
+            const excerptKey = `${key}-excerpt-${idx}`;
+            const isPlaying = playing === excerptKey;
+            const excerptUrl = trackUrl ? deriveClipUrlFromBase(trackUrl, `excerpt-${idx}`) : '';
+            return (
+              <div className="lyric-quote" key={excerptKey}>
+                <button
+                  className={'clip-btn'+(isPlaying?' playing':'')}
+                  onClick={() => onToggle(excerptKey, excerptUrl)}
+                  disabled={!excerptUrl}
+                >
+                  {excerptUrl?(isPlaying?'Pause Excerpt':'Play Excerpt'):'Clip URL Missing'}
+                </button>
+                <div className="lyric-text">{renderAnnotated(excerpt, ANNOTATIONS[track.name])}</div>
+              </div>
+            );
+          })}
+          <div className="track-analysis">{track.analysis}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CortexRow({ track, playing, onToggle }) {
+  const [open, setOpen] = useState(false);
+  const clipUrl = CORTEX_CLIPS[track.clipKey] || '';
+  const trackSlug = CORTEX_TRACK_SLUGS[track.clipKey] || clipKey(track.clipKey);
+  const playKey = 'cortex-' + trackSlug;
+  const isPlaying = playing === playKey;
+  return (
+    <div className="cortex-item">
+      <div className="cortex-top" onClick={() => setOpen(o => !o)}>
+        <div className="cortex-num">{String(track.num).padStart(2,'0')}</div>
+        <div>
+          <a className="cortex-name-link" href={track.url} target="_blank" rel="noopener" onClick={e => e.stopPropagation()}>{track.title}</a>
+          <div className="cortex-role">{track.role}</div>
+          <div className="cortex-short">{track.short}</div>
+          <button
+            className={'lineage-clip' + (isPlaying ? ' playing' : '')}
+            onClick={e => { e.stopPropagation(); onToggle(playKey, clipUrl); }}
+            disabled={!clipUrl}
+          >
+            {clipUrl ? (isPlaying ? '⏸ Pause Clip' : '▶ Play Clip') : 'Clip URL Missing'}
+          </button>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
+          <div className="cortex-badge">{track.badge}</div>
+          <div className="track-toggle">{open?'−':'+'}</div>
+        </div>
+      </div>
+      {open && <div className="cortex-expand">{track.full}</div>}
+    </div>
+  );
+}
+
+const OVERLAY_STYLE = {
+  display:'flex', alignItems:'center',
+  background:'rgba(9,8,11,0.85)',
+  border:'1px solid rgba(255,255,255,0.1)',
+  borderRadius:6, overflow:'hidden', position:'absolute', zIndex:1000,
+};
+const OBTN = { fontSize:'9px', letterSpacing:'0.18em', textTransform:'uppercase', padding:'8px 14px', background:'transparent', cursor:'pointer', fontFamily:'Space Grotesk,sans-serif', border:'none' };
+const ODIV = { width:1, height:14, background:'rgba(255,255,255,0.1)', flexShrink:0 };
+
+function MapView({ onPin, activeLoc, onReady, onMarkersReady, onLabelsReady, panelOpenRef }) {
+  const mapRef = useRef(null);
+  const darkRef = useRef(null);
+  const satRef = useRef(null);
+  const [isSat, setIsSat] = useState(false);
+
+  const switchLayer = (toSat) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (toSat && !map.hasLayer(satRef.current)) { map.removeLayer(darkRef.current); satRef.current.addTo(map); }
+    if (!toSat && !map.hasLayer(darkRef.current)) { map.removeLayer(satRef.current); darkRef.current.addTo(map); }
+    setIsSat(toSat);
+  };
+
+  useEffect(() => {
+    const map = L.map('compton-map', { center:[34.05,-118.25], zoom:10, zoomControl:true, scrollWheelZoom:false });
+    mapRef.current = map;
+    if (onReady) onReady(map);
+
+    const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution:'&copy; CARTO', subdomains:'abcd', maxZoom:19 });
+    const sat  = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution:'&copy; Esri', maxZoom:19 });
+    dark.addTo(map);
+    darkRef.current = dark;
+    satRef.current = sat;
+
+    setTimeout(() => map.flyTo([33.897,-118.220], 12, { duration:2.6, easeLinearity:0.22 }), 350);
+
+    setTimeout(() => {
+      const s = document.createElement('style');
+              s.textContent = '.ctip{background:#09080b;border:1px solid #2a2730;box-shadow:none;padding:5px 10px;border-radius:0;color:#c07830;font-family:Space Grotesk,sans-serif;font-size:9px;letter-spacing:.14em;text-transform:uppercase}.ctip::before{display:none}.mpop{pointer-events:none}.mpop .leaflet-popup-content-wrapper{background:#09080b;border:1px solid #2a2730;border-radius:0;box-shadow:none;padding:0;z-index:9999}.mpop .leaflet-popup-content{margin:0;padding:12px 16px}.mpop .leaflet-popup-tip-container,.mpop .leaflet-popup-close-button{display:none}';
+      document.head.appendChild(s);
+      const markers = [];
+      const labels = [];
+      PINS.forEach((pin) => {
+        const m = L.circleMarker([pin.lat,pin.lng], { radius:6, fillColor:'#c07830', color:'#c07830', weight:1.5, opacity:1, fillOpacity:0.85 }).addTo(map);
+        m.bindTooltip(pin.name+' · '+pin.trackSong, { className:'ctip', direction:'top', offset:[0,-10] });
+          m.on('mouseover', () => { if (panelOpenRef && panelOpenRef.current && panelOpenRef.current === pin.id) m.closeTooltip(); });
+        m.bindPopup('<div style="font-family:Space Grotesk,sans-serif"><div style="font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#c07830;margin-bottom:4px">Track '+String(pin.trackNum).padStart(2,'0')+'</div><div style="font-family:Cormorant Garamond,Georgia,serif;font-size:16px;font-weight:600;color:#c07830;margin-bottom:2px">'+pin.name+'</div><div style="font-size:11px;color:#7a7570;line-height:1.6">'+pin.body+'</div></div>', { className:'mpop', offset:[0,-6], autoPan:false });
+        m.on('click', () => {
+          map.closePopup();
+          markers.forEach(mk => mk.setStyle({ opacity:0, fillOpacity:0 }));
+          map.flyTo([pin.lat,pin.lng], 15, { duration:1.4, easeLinearity:0.25 });
+          map.once('moveend', () => {
+            markers.forEach(mk => mk.setStyle({ opacity:1, fillOpacity:0.85 }));
+            m.openPopup();
+          });
+          onPin(pin);
+        });
+        markers.push(m);
+        const label = L.marker([pin.lat,pin.lng], {
+          interactive:false,
+          zIndexOffset:500,
+          icon:L.divIcon({
+            className:'map-pin-label',
+            iconSize:[132,34],
+            iconAnchor:pin.labelAnchor,
+            html:'<div class="map-pin-label-inner"><span class="map-pin-label-track">Track '+String(pin.trackNum).padStart(2,'0')+'</span><span class="map-pin-label-name">'+pin.mapLabel+'</span></div>',
+          }),
+        }).addTo(map);
+        label.setOpacity(0);
+        labels.push(label);
+      });
+      if (onMarkersReady) onMarkersReady(markers);
+      if (onLabelsReady) onLabelsReady(labels);
+    }, 3200);
+
+    return () => { map.remove(); mapRef.current = null; };
+  }, []);
+
+  useEffect(() => {
+    if (!activeLoc && mapRef.current) {
+      switchLayer(false);
+      mapRef.current.flyTo([33.897,-118.220], 12, { duration:1.2, easeLinearity:0.25 });
+    }
+  }, [activeLoc]);
+
+  return (
+    <div className="map-wrap">
+      <div id="compton-map" />
+      <div style={{...OVERLAY_STYLE, top:12, right:12}}>
+        <button style={{...OBTN, color:!isSat?'#c07830':'rgba(255,255,255,0.5)'}} onClick={() => switchLayer(false)}>Map</button>
+        <div style={ODIV} />
+        <button style={{...OBTN, color:isSat?'#c07830':'rgba(255,255,255,0.5)'}} onClick={() => switchLayer(true)}>Satellite</button>
+      </div>
+    </div>
+  );
+}
+
+function VoicemailLog({ playing, onToggle }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="vm-section">
+      <button className="vm-toggle" onClick={() => setOpen(o => !o)}>
+        <div>
+          <div className="vm-toggle-title">The Day, In Calls</div>
+          <div className="vm-toggle-sub">Voicemails, Skits & Conversations</div>
+        </div>
+        <div className="vm-toggle-mark">{open?'−':'+'}</div>
+      </button>
+      {open && (
+        <div className="vm-log">
+          <div className="vm-frame">
+            <div className="vm-statusbar">
+              <span><span className="vm-statusbar-dot" />Phone — K.DOT</span>
+              <span>One day, twenty-four hours</span>
+              <span>9 / 9</span>
+            </div>
+            <div className="vm-disclaimer"><b>Note</b>The album never gives exact clock times, so these are guided guesses based on the shape of the day.</div>
+            {VOICEMAILS.map(v => {
+              const vmKey = `vm-${v.num}`;
+              const baseClipUrl = getTrackClipUrlByNum(v.track);
+              const fromSlug = clipKey(v.from);
+              const vmUrl = baseClipUrl ? deriveClipUrlFromBase(baseClipUrl, `voicemail-${v.num}-${fromSlug}`) : '';
+              const isPlaying = playing === vmKey;
+              return (
+                <div key={v.num} className="vm-row">
+                  <div className="vm-meta">
+                    <div className="vm-time">{v.time}</div>
+                    <div className="vm-dir">{v.dir}</div>
+                    <button
+                      className={'clip-btn'+(isPlaying?' playing':'')}
+                      onClick={() => onToggle(vmKey, vmUrl)}
+                      disabled={!vmUrl}
+                      style={{ width: '100%' }}
+                    >
+                      {vmUrl ? (isPlaying ? 'Pause Voicemail' : 'Play Voicemail') : 'Voicemail Clip URL Missing'}
+                    </button>
+                  </div>
+                  <div>
+                    <div className="vm-from">{v.from}</div>
+                    <div className="vm-text">"{v.text}"</div>
+                    <div className="vm-note"><span className="vm-note-track">Track {String(v.track).padStart(2,'0')}</span> — {v.song} · {v.note}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MotifMatrix({ playing, onToggle }) {
+  const ch = (n) => n === 0 ? '·' : n === 1 ? '○' : n === 2 ? '◐' : '●';
+  const staticDot = (n) => <span className={'mot-dot mot-'+n}>{ch(n)}</span>;
+  const cellDot = (n, motif, track) => {
+    if (n < 1) return staticDot(n);
+    const url = getMotifClipUrl(motif, track);
+    const fallbackUrl = CORTEX_CLIPS[track] || '';
+    if (!url) return staticDot(n);
+    const motifSlug = MOTIF_SLUGS[motif] || clipKey(motif);
+    const trackSlug = CORTEX_TRACK_SLUGS[track] || clipKey(track);
+    const key = 'cortex-motif-' + motifSlug + '-' + trackSlug;
+    const isPlaying = playing === key;
+    return (
+      <button
+        className={'mot-dot mot-' + n + ' mot-btn' + (isPlaying ? ' mot-playing' : '')}
+        onClick={() => onToggle(key, url, fallbackUrl)}
+        title={(isPlaying ? 'Pause ' : 'Play ') + motif + ' in ' + track}
+        aria-label={(isPlaying ? 'Pause ' : 'Play ') + motif + ' in ' + track}
+      >
+        {ch(n)}
+      </button>
+    );
+  };
+  return (
+    <div className="motif">
+      <div className="motif-head">
+        <div>
+          <div className="motif-title">Motif Recurrence Matrix</div>
+          <div className="motif-sub" style={{marginTop:4}}>Sound Continuity, Mapped</div>
+        </div>
+      </div>
+      <p className="motif-intro">This is the album's sound world at a glance. Filled circles mean a motif is central, half-circles mean it is present, and rings mean it is just brushing the edge. Read down a column to hear how strongly a track belongs to the album; read across a row to see how often one musical idea returns.</p>
+      <div className="mot-cta">
+        <span className="mot-cta-icon">▶</span>
+        <div>
+          <span className="mot-cta-eye">Listening Booth</span>
+          <span className="mot-cta-text">Click any active mark to hear that motif inside that Cortex track.</span>
+        </div>
+      </div>
+      <div className="motif-tablewrap">
+        <table className="motif-table">
+          <thead>
+            <tr>
+              <th></th>
+              {MOTIFS.cols.map(c => <th key={c}>{c}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {MOTIFS.rows.map(r => (
+              <tr key={r.lbl}>
+                <th scope="row">{r.lbl}</th>
+                {r.cells.map((c, i) => <td key={i}>{cellDot(c, r.lbl, MOTIFS.cols[i])}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="motif-legend">
+        <span>{staticDot(3)} central</span>
+        <span>{staticDot(2)} present</span>
+        <span>{staticDot(1)} subtle</span>
+        <span>{staticDot(0)} absent</span>
+      </div>
+    </div>
+  );
+}
+
+function SampleLineage({ playing, onToggle }) {
+  return (
+    <div className="lineage">
+      <div className="lineage-head">
+        <div>
+          <div className="lineage-title">Where This Sound Went</div>
+          <div className="lineage-sub" style={{marginTop:6}}>Troupeau Bleu in Other Records</div>
+        </div>
+      </div>
+      <p className="lineage-intro">One way to know a sound is strong: other artists keep borrowing it. Producers have returned to Troupeau Bleu for decades, often reaching for the same few bars of "Huit Octobre 1971."</p>
+      <div className="lineage-list">
+        {SAMPLES.map((s, i) => {
+          const key = 'sample-' + s.track.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+          const url = SAMPLE_CLIPS[s.track];
+          const isPlaying = playing === key;
+          return (
+            <div key={i} className="lineage-card">
+              <div className="lineage-arrow">{String(i+1).padStart(2,'0')}</div>
+              <div>
+                <div className="lineage-from">From <b>Cortex — "{s.src}"</b> · 1975</div>
+                <div className="lineage-into">into <strong>{s.artist} — "{s.track}"</strong></div>
+                <div className="lineage-meta">{s.album} · {s.year}</div>
+                <div className="lineage-note">{s.note}</div>
+                <button
+                  className={'lineage-clip' + (isPlaying ? ' playing' : '')}
+                  onClick={() => onToggle(key, url)}
+                  disabled={!url}
+                >
+                  {url ? (isPlaying ? '⏸ Pause Clip' : '▶ Play Clip') : 'Clip URL Missing'}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="lineage-foot">There are many more flips across hip-hop, electronic, and pop. What matters here is simple: one piano figure can travel through decades of music and still carry the same weather with it.</div>
+    </div>
+  );
+}
+
+function HistoryTimeline({ playing, onToggle }) {
+  const [active, setActive] = useState(0);
+  const era = TIMELINE[active];
+  const isSelf = !!era.self;
+  const isPlaying = playing === era.clipKey;
+  const eraStyle = {'--era-color': era.color, '--era-dim': era.dim, '--era-ring': era.ring, '--era-bg': era.bg};
+  return (
+    <section id="history" className="history-section">
+      <div className="history-head">
+        <div className="history-eyebrow">A Brief History of Continuity</div>
+        <div className="history-title">A Thousand-Year Lineage</div>
+        <div className="history-sub">Six moments in the long effort to make music feel whole</div>
+        <p className="history-intro">Album continuity is part of a much older question: how does music make a stretch of time feel whole? For a thousand years, composers and performers have answered that in different ways. These two albums are modern versions of the same problem.</p>
+      </div>
+      <div className="history-track">
+        <div className="history-line" />
+        {TIMELINE.map((t, i) => (
+          <button
+            key={t.era}
+            className={'history-node' + (active===i ? ' on' : '') + (t.self ? ' self' : '')}
+            style={{'--era-color': t.color, '--era-dim': t.dim, '--era-ring': t.ring, '--era-bg': t.bg}}
+            onClick={() => setActive(i)}
+            aria-current={active===i ? 'step' : undefined}
+          >
+            <div className="history-node-icon">{t.icon}</div>
+            <div className="history-node-dot" />
+            <div className="history-node-era">{t.era}</div>
+          </button>
+        ))}
+      </div>
+      <div className={'history-detail' + (isSelf ? ' self' : '')} style={eraStyle}>
+        <div className="history-detail-grid">
+          <div>
+            <div className="history-detail-era">{era.era}</div>
+            <div className="history-detail-label">{era.label}</div>
+            <div className="history-detail-type">{era.type}</div>
+            <div className="history-detail-work">{era.work}</div>
+            <button
+              className={'history-clip' + (isPlaying ? ' playing' : '') + (isSelf ? ' self' : '')}
+              onClick={() => onToggle(era.clipKey, era.clipUrl)}
+              disabled={!era.clipUrl}
+            >
+              {era.clipUrl ? (isPlaying ? '⏸ Pause Sample' : '▶ Play Sample') : 'Clip URL Missing'}
+            </button>
+          </div>
+          <div className="history-detail-body">{era.body}</div>
+        </div>
+      </div>
+      <p className="history-intro">By the album era, continuity can travel two ways: through a story that keeps moving, or through a sound that keeps returning. The two records here push those paths as far as they can.</p>
+    </section>
+  );
+}
+
+function App() {
+  const [locPanel, setLocPanel]   = useState(null);
+  const [pinIdx,   setPinIdx]     = useState(-1);
+  const [charOpen, setCharOpen]   = useState(false);
+  const [atlasOpen, setAtlasOpen] = useState(true);
+  const [playing,  setPlaying]    = useState('');
+  const playingRef = useRef('');
+  const setPlayingSync = (key) => { playingRef.current = key; setPlaying(key); };
+  const audioRef    = useRef(null);
+  const mapRef      = useRef(null);
+  const markersRef  = useRef([]);
+  const labelsRef   = useRef([]);
+  const mapWrapRef  = useRef(null);
+  const scrollLocked = useRef(false);
+  const pinIdxRef   = useRef(-1);
+
+  const panelOpenRef = useRef(false);
+  useEffect(() => { panelOpenRef.current = locPanel ? locPanel.id : null; }, [locPanel]);
+
+  // Keep pinIdxRef in sync with pinIdx so the wheel handler always sees the current pin.
+  useEffect(() => { pinIdxRef.current = pinIdx; }, [pinIdx]);
+
+  useEffect(() => {
+    audioRef.current = new Audio();
+    const onEnd = () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      setPlayingSync('');
+    };
+    audioRef.current.addEventListener('ended', onEnd);
+    return () => { audioRef.current.pause(); audioRef.current.removeEventListener('ended', onEnd); };
+  }, []);
+
+  // One-gesture-one-slide snap for the first 3 sections (+ Side A as the destination edge).
+  // Gesture detection: absorb the inertia tail from one trackpad flick, but release on
+  // a hard timer so the early slides never require a click before the next scroll.
+  useEffect(() => {
+    let gestureActive = false;
+    let gestureTimer = null;
+    let gestureStarted = 0;
+    let keyLastTime = 0;
+    const SELECTORS = ['.hero.hero-narrow', '#history', '.albums-intro', '#side-a'];
+    const getState = () => {
+      const els = SELECTORS.map(s => document.querySelector(s));
+      if (els.some(el => !el)) return null;
+      const tops = els.map(el => Math.max(0, el.offsetTop - 60));
+      let currentIdx = 0, bestDist = Infinity;
+      for (let i = 0; i < tops.length; i++) {
+        const d = Math.abs(window.scrollY - tops[i]);
+        if (d < bestDist) { currentIdx = i; bestDist = d; }
+      }
+      return { tops, currentIdx, bestDist };
+    };
+    const resetGesture = () => {
+      if (gestureTimer) clearTimeout(gestureTimer);
+      gestureActive = false;
+      gestureTimer = null;
+      gestureStarted = 0;
+    };
+    const armIdle = () => {
+      if (gestureTimer) clearTimeout(gestureTimer);
+      gestureTimer = setTimeout(resetGesture, 240);
+    };
+    const onWheel = (e) => {
+      // While a gesture is in flight (initial scroll + inertia tail), eat everything
+      // briefly, then release even if the browser keeps sending tiny wheel events.
+      if (gestureActive) {
+        if (Date.now() - gestureStarted < 850) {
+          e.preventDefault();
+          armIdle();
+          return;
+        }
+        resetGesture();
+      }
+      const s = getState();
+      if (!s || s.bestDist > 140) return;
+      const dir = e.deltaY > 0 ? 1 : -1;
+      const nextIdx = s.currentIdx + dir;
+      if (nextIdx < 0 || nextIdx >= s.tops.length) return;
+      e.preventDefault();
+      window.scrollTo({ top: s.tops[nextIdx], behavior: 'smooth' });
+      gestureActive = true;
+      gestureStarted = Date.now();
+      armIdle();
+    };
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+      const isDown = e.key === 'ArrowDown' || e.key === 'PageDown';
+      const isUp = e.key === 'ArrowUp' || e.key === 'PageUp';
+      if (!isDown && !isUp) return;
+      const now = Date.now();
+      // Keys have their own throttle, completely independent of wheel state.
+      if (now - keyLastTime < 320) { e.preventDefault(); return; }
+      const s = getState();
+      if (!s || s.bestDist > 140) return;
+      const dir = isDown ? 1 : -1;
+      const nextIdx = s.currentIdx + dir;
+      if (nextIdx < 0 || nextIdx >= s.tops.length) return;
+      e.preventDefault();
+      keyLastTime = now;
+      window.scrollTo({ top: s.tops[nextIdx], behavior: 'smooth' });
+    };
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('keydown', onKey);
+      resetGesture();
+    };
+  }, []);
+
+  const stopAll = () => {
+    const a = audioRef.current;
+    if (a) { a.onerror = null; a.pause(); a.currentTime = 0; }
+    playingRef.current = '';
+    setPlaying('');
+  };
+
+  const onToggle = async (key, url, fallbackUrl = '') => {
+    if (!url || !audioRef.current) return;
+    const a = audioRef.current;
+    if (playingRef.current === key) { a.onerror = null; a.pause(); setPlayingSync(''); return; }
+    const sources = [url, fallbackUrl].filter((src, i, arr) => src && arr.indexOf(src) === i);
+    let sourceIdx = 0;
+    const playSource = async () => {
+      const src = sources[sourceIdx];
+      if (!src) { setPlayingSync(''); return; }
+      a.onerror = () => {
+        if (playingRef.current !== key) return;
+        sourceIdx += 1;
+        playSource();
+      };
+      try {
+        a.pause();
+        a.currentTime = 0;
+        a.src = src;
+        await a.play();
+        setPlayingSync(key);
+      } catch(e) {
+        sourceIdx += 1;
+        if (sourceIdx < sources.length) await playSource();
+        else setPlayingSync('');
+      }
+    };
+    setPlayingSync(key);
+    await playSource();
+  };
+
+  const setMapLabelsVisible = (visible) => {
+    labelsRef.current.forEach(label => label.setOpacity(visible ? 1 : 0));
+  };
+
+  const goToPin = (i) => {
+    const pin = PINS[i];
+    pinIdxRef.current = i;
+    setPinIdx(i);
+    setLocPanel(pin);
+    setMapLabelsVisible(false);
+    const map = mapRef.current;
+    if (!map) return;
+    map.closePopup();
+    markersRef.current.forEach(m => { m.closePopup(); m.setStyle({ opacity:0, fillOpacity:0 }); });
+    map.flyTo([pin.lat,pin.lng], 15, { duration:1.2, easeLinearity:0.25 });
+    map.once('moveend', () => {
+      markersRef.current.forEach(m => m.setStyle({ opacity:1, fillOpacity:0.85 }));
+      if (markersRef.current[i]) markersRef.current[i].openPopup();
+    });
+  };
+
+  // Overview after the last pin: zoom out to fit all five locations in the frame.
+  const showOverview = () => {
+    pinIdxRef.current = PINS.length;
+    setPinIdx(PINS.length);
+    setLocPanel({ overview: true });
+    setMapLabelsVisible(false);
+    const map = mapRef.current;
+    if (!map) return;
+    map.closePopup();
+    markersRef.current.forEach(m => { m.closePopup(); m.setStyle({ opacity:1, fillOpacity:0.85 }); });
+    const bounds = L.latLngBounds(PINS.map(p => [p.lat, p.lng]));
+    map.flyToBounds(bounds, { duration:1.6, easeLinearity:0.25, padding:[60,60] });
+    map.once('moveend', () => setMapLabelsVisible(true));
+  };
+
+  useEffect(() => {
+    let completed = false;
+    let animating = false;
+    const lock   = () => { document.body.style.overflow='hidden'; scrollLocked.current=true; };
+    const unlock = () => { document.body.style.overflow='';       scrollLocked.current=false; };
+
+    const advance = (dir) => {
+      if (animating) return;
+      const next = pinIdxRef.current + dir;
+      if (next < 0) { unlock(); return; }
+      if (next < PINS.length) {
+        animating = true;
+        goToPin(next);
+        if (mapRef.current) mapRef.current.once('moveend', () => { animating = false; });
+        else setTimeout(() => { animating = false; }, 1400);
+        return;
+      }
+      if (next === PINS.length) {
+        // After the last pin, zoom out so all five points are visible.
+        animating = true;
+        showOverview();
+        if (mapRef.current) mapRef.current.once('moveend', () => { animating = false; });
+        else setTimeout(() => { animating = false; }, 1700);
+        return;
+      }
+      // Past the overview: release scroll, let the user continue down the page.
+      completed = true; unlock();
+    };
+
+    const onWheel = (e) => {
+      const wrap = mapWrapRef.current;
+      // Not yet locked: engage ONLY on real user wheel input (so programmatic
+      // smooth-scrolls from the hero cards / nav don't get hijacked by the map).
+      if (!scrollLocked.current) {
+        if (completed || pinIdxRef.current !== -1 || !wrap) return;
+        const rect = wrap.getBoundingClientRect();
+        const mid  = rect.top + rect.height / 2;
+        if (Math.abs(mid - window.innerHeight * 0.5) < rect.height * 0.4) {
+          e.preventDefault(); e.stopPropagation();
+          lock();
+          window.scrollTo({ top: wrap.offsetTop - 60, behavior:'smooth' });
+          setTimeout(() => goToPin(0), 400);
+        }
+        return;
+      }
+      // Locked: each wheel tick steps through the pins.
+      e.preventDefault(); e.stopPropagation();
+      if (animating) return;
+      advance(e.deltaY > 0 ? 1 : -1);
+    };
+
+    const onScroll = () => {
+      const wrap = mapWrapRef.current;
+      if (!wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      // Reset once the user has fully passed the map after completion.
+      if (completed && rect.bottom < 0) {
+        completed = false; animating = false;
+        setMapLabelsVisible(false);
+        setPinIdx(-1); pinIdxRef.current = -1; setLocPanel(null);
+      }
+    };
+
+    // Arrow / Page keys mirror the wheel behavior so keyboard users get the same
+    // map experience: engage when the map is centered, then step through pins.
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+      const isDown = e.key === 'ArrowDown' || e.key === 'PageDown';
+      const isUp = e.key === 'ArrowUp' || e.key === 'PageUp';
+      if (!isDown && !isUp) return;
+      const wrap = mapWrapRef.current;
+      if (!scrollLocked.current) {
+        if (completed || pinIdxRef.current !== -1 || !wrap) return;
+        const rect = wrap.getBoundingClientRect();
+        const mid  = rect.top + rect.height / 2;
+        if (Math.abs(mid - window.innerHeight * 0.5) < rect.height * 0.4) {
+          e.preventDefault(); e.stopPropagation();
+          lock();
+          window.scrollTo({ top: wrap.offsetTop - 60, behavior:'smooth' });
+          setTimeout(() => goToPin(0), 400);
+        }
+        return;
+      }
+      e.preventDefault(); e.stopPropagation();
+      if (animating) return;
+      advance(isDown ? 1 : -1);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive:true });
+    document.addEventListener('wheel',  onWheel,  { passive:false, capture:true });
+    document.addEventListener('keydown', onKey,   { capture:true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('wheel', onWheel, { capture:true });
+      document.removeEventListener('keydown', onKey, { capture:true });
+      unlock();
+    };
+  }, []);
+
+  const scrollTo = id => { const el=document.getElementById(id); if(el) window.scrollTo({top:el.offsetTop-60,behavior:'smooth'}); };
+  const playbackMeta = getPlaybackMeta(playing);
+  const showNowPlaying = playing && !playing.startsWith('cortex-motif-');
+  const mapCounterLabel = pinIdx === PINS.length ? 'All 5' : (pinIdx >= 0 ? (pinIdx + 1) + ' / ' + PINS.length : '— / ' + PINS.length);
+
+  return (
+    <>
+      <div className="scroll-progress" aria-hidden="true" />
+      <Nav />
+
+      <section className="hero hero-narrow">
+        <div>
+          <div className="hero-kicker">HUM 2020 · Album Continuity · By Alexander Anzivino</div>
+          <div className="hero-magnum">A Magnum Opus</div>
+          <div className="hero-title">ALBUM<br />CONTINUITY</div>
+          <hr className="hero-rule" />
+          <p className="hero-thesis">How does a long piece of music feel like one thing instead of a pile of separate parts? That question runs through chant, polyphony, sonata form, and the LP. This project follows it into two albums that answer it in completely different ways.</p>
+        </div>
+      </section>
+
+      <HistoryTimeline playing={playing} onToggle={onToggle} />
+
+     <section className="albums-intro">
+  <div className="albums-intro-eye">The Two Records</div>
+  <div className="albums-intro-title">Two albums, fifty years apart, trying to solve the same problem.</div>
+  <div className="hero-cards">
+    <div className="hero-card a" onClick={() => scrollTo('side-a')}>
+      <div className="hero-card-art"><img src={ART_GKMC} alt="good kid, m.A.A.d city album cover" loading="lazy" /></div>
+      <div className="hero-card-body">
+        <div className="hero-card-eye">Side A · Narrative Continuity</div>
+        <a className="hero-card-title" href="https://open.spotify.com/album/6PBZN8cbwkqm1ERj2BGXJ1" target="_blank" rel="noopener" onClick={e=>e.stopPropagation()}>good kid, m.A.A.d city</a>
+        <div className="hero-card-sub">Kendrick Lamar · 2012 · Compton, CA</div>
+      </div>
+      <div className="hero-card-arrow">↓</div>
+    </div>
+    <div className="hero-card b" onClick={() => scrollTo('side-b')}>
+      <div className="hero-card-art"><img src={ART_TROUPEAU} alt="Troupeau Bleu album cover" loading="lazy" /></div>
+      <div className="hero-card-body">
+        <div className="hero-card-eye">Side B · Sonic Continuity</div>
+        <a className="hero-card-title" href="https://open.spotify.com/album/74DOWHisu2jlFvPid9YTGB" target="_blank" rel="noopener" onClick={e=>e.stopPropagation()}>Troupeau Bleu</a>
+        <div className="hero-card-sub">Cortex · 1975 · Paris, France</div>
+      </div>
+      <div className="hero-card-arrow">↓</div>
+    </div>
+  </div>
+</section>
+<section id="side-a">
+  <div className="sec-head">
+    <div className="sec-title a">good kid, m.A.A.d city</div>
+    <div className="sec-right">
+      <span className="sec-label">Side A · Story Continuity</span>
+      <span className="sec-meta">Kendrick Lamar · Compton, CA · 2012</span>
+      <a className="spotify-link a" href="https://open.spotify.com/album/6PBZN8cbwkqm1ERj2BGXJ1" target="_blank" rel="noopener">♫ Full Album</a>
+    </div>
+  </div>
+  <div className="editorial">
+    <div className="ed-intro">
+      <div className="ed-intro-label">Track by Track — Chain Reaction</div>
+      <div className="ed-intro-text">Continuity here is causal: each track happens because of the one before it. The album follows one day in Compton, where one choice keeps leading to the next. Open a track to see how the chain moves.</div>
+    </div>
+  </div>
+</section>
+
+          <button className="char-toggle" onClick={() => setCharOpen(o=>!o)}>
+            <div>
+              <div className="char-toggle-title">Who's In The Story</div>
+              <div className="char-toggle-sub">The voices pulling the day forward</div>
+            </div>
+            <div className="char-toggle-mark">{charOpen?'−':'+'}</div>
+          </button>
+          {charOpen && (
+            <div className="char-list">
+              {CHARS.map(c => (
+                <div key={c.name} className="char-row">
+                  <div><div className="char-name">{c.name}</div><div className="char-role">{c.role}</div></div>
+                  <div className="char-desc">{c.desc}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {STAGES.map((stage,si) => (
+            <div key={stage.id}>
+              <div className="stage-divider">
+                <span className="stage-divider-num">{String(si+1).padStart(2,'0')}</span>
+                <span className="stage-divider-name">{stage.label}</span>
+                <div className="stage-divider-line" />
+              </div>
+              {stage.tracks.map(t => <TrackRow key={t.num} track={t} badge={stage.label} playing={playing} onToggle={onToggle} />)}
+            </div>
+          ))}
+
+          <VoicemailLog playing={playing} onToggle={onToggle} />
+
+          <div className="map-chapter">
+            <button className="map-chapter-head map-chapter-toggle" onClick={() => { setAtlasOpen(o => !o); if (atlasOpen) { setLocPanel(null); setPinIdx(-1); pinIdxRef.current = -1; setMapLabelsVisible(false); } }}>
+              <div>
+                <div className="map-chapter-title">Compton Atlas</div>
+                <div className="map-chapter-sub">Where the story happens</div>
+              </div>
+              <div className="map-chapter-mark">{atlasOpen ? '−' : '+'}</div>
+            </button>
+            {atlasOpen && (
+              <>
+                <div ref={mapWrapRef} style={{position:'relative'}}>
+                  <MapView
+                    onPin={pin => { setMapLabelsVisible(false); setLocPanel(pin); setPinIdx(PINS.findIndex(p=>p.id===pin.id)); }}
+                    activeLoc={locPanel}
+                    onReady={m => { mapRef.current = m; }}
+                    onMarkersReady={m => { markersRef.current = m; }}
+                    onLabelsReady={m => { labelsRef.current = m; }}
+                    panelOpenRef={panelOpenRef}
+                  />
+                  <div style={{...OVERLAY_STYLE, bottom:28, left:'50%', transform:'translateX(-50%)'}}>
+                    <button style={{...OBTN,color:'rgba(255,255,255,0.5)'}} onClick={() => goToPin(pinIdx<=0?PINS.length-1:pinIdx-1)}>← Back</button>
+                    <div style={ODIV} />
+                    <span style={{fontFamily:'DM Mono,monospace',fontSize:'9px',color:'rgba(255,255,255,0.3)',minWidth:46,textAlign:'center',padding:'0 4px'}}>{mapCounterLabel}</span>
+                    <div style={ODIV} />
+                    <button style={{...OBTN,color:'rgba(255,255,255,0.5)'}} onClick={() => goToPin(pinIdx>=PINS.length-1||pinIdx===-1?0:pinIdx+1)}>Next →</button>
+                  </div>
+                </div>
+                {locPanel ? (
+                  locPanel.overview ? (
+                    <div className="loc-panel">
+                      <div className="loc-n">5</div>
+                      <div>
+                        <div className="loc-name">All Five Locations</div>
+                        <div className="loc-track">The full geography of one day</div>
+                        <div className="loc-body">Rosecrans → Gonzales Park → Louis Burgers → Sherane's side → Central Compton. What starts as a drive to see a girl turns into a map of the whole album.</div>
+                        <button style={{marginTop:12,fontSize:'0.65em',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--muted)',background:'none',border:'none',fontFamily:'var(--font-u)',cursor:'pointer'}} onClick={() => { setMapLabelsVisible(false); setLocPanel(null); setPinIdx(-1); pinIdxRef.current = -1; }}>Close ×</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="loc-panel">
+                      <div className="loc-n">{String(locPanel.trackNum).padStart(2,'0')}</div>
+                      <div>
+                        <div className="loc-name">{locPanel.name}</div>
+                        <div className="loc-track">Track {String(locPanel.trackNum).padStart(2,'0')} — {locPanel.trackSong}</div>
+                        <div className="loc-body">{locPanel.body}</div>
+                        <button style={{marginTop:12,fontSize:'0.65em',letterSpacing:'0.18em',textTransform:'uppercase',color:'var(--muted)',background:'none',border:'none',fontFamily:'var(--font-u)',cursor:'pointer'}} onClick={() => { setMapLabelsVisible(false); setLocPanel(null); setPinIdx(-1); pinIdxRef.current = -1; }}>Close ×</button>
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  <div className="loc-hint">Pick a pin or use the arrows to follow the route</div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section id="side-b" style={{borderTop:'1px solid var(--rule)'}}>
+        <div className="sec-head">
+          <div className="sec-title b">Troupeau Bleu</div>
+          <div className="sec-right">
+            <span className="sec-label">Side B · Sound Continuity</span>
+            <span className="sec-meta">Cortex · Paris · 1975</span>
+            <a className="spotify-link b" href="https://open.spotify.com/album/74DOWHisu2jlFvPid9YTGB" target="_blank" rel="noopener">♫ Find on Spotify</a>
+          </div>
+        </div>
+        <div className="ed-intro" style={{padding:'32px 40px 24px'}}>
+          <div className="ed-intro-text">This album does not move forward so much as sink deeper in. Its continuity comes from staying inside the same sound world until every track feels related.</div>
+        </div>
+        <div className="framework">
+          {FRAMEWORK.sonic.map(el => (
+            <div key={el.lbl} className="fw-cell">
+              <div className="fw-label">{el.lbl}</div>
+              <div className="fw-desc">{el.desc}</div>
+            </div>
+          ))}
+        </div>
+        <MotifMatrix playing={playing} onToggle={onToggle} />
+        <div style={{padding:'24px 40px 8px'}}>
+          <div className="ed-intro-label">Key Tracks — open a track, or use the title for Spotify</div>
+        </div>
+        {CORTEX.map(t => <CortexRow key={t.num} track={t} playing={playing} onToggle={onToggle} />)}
+        <SampleLineage playing={playing} onToggle={onToggle} />
+      </section>
+
+      <section id="bridge" style={{borderTop:'1px solid var(--rule)'}} className="bridge">
+        <div className="bridge-kicker">Final Take</div>
+        <div className="bridge-title">Two Approaches,<br />One Goal</div>
+        <p className="bridge-body">One album holds together because each event causes the next. The other holds together because sounds keep returning, deepening the atmosphere. Both show how music can move through time without losing itself.</p>
+        <div className="bridge-cols">
+          <div className="b-col-a">
+            <div className="bridge-col-eye">Side A</div>
+            <div className="bridge-col-title">good kid, m.A.A.d city</div>
+            <div className="bridge-col-mode">Story is the thread</div>
+            {FRAMEWORK.narrative.map(el => (
+              <div key={el.lbl} className="bridge-el">
+                <div className="bridge-el-lbl">{el.lbl}</div>
+                <div className="bridge-el-desc">{el.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div className="bridge-divider" />
+          <div className="b-col-b">
+            <div className="bridge-col-eye">Side B</div>
+            <div className="bridge-col-title">Troupeau Bleu</div>
+            <div className="bridge-col-mode">Sound is the thread</div>
+            {FRAMEWORK.sonic.map(el => (
+              <div key={el.lbl} className="bridge-el">
+                <div className="bridge-el-lbl">{el.lbl}</div>
+                <div className="bridge-el-desc">{el.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bridge-coda">
+          <div className="bridge-coda-title">Why They Hold Together</div>
+          <div className="bridge-coda-body">Kendrick gives you a plot you can follow. Cortex gives you a room you keep reentering. Different methods, same kind of focus.</div>
+        </div>
+        <p className="bridge-body" style={{marginBottom:0}}>Across a thousand years, the methods change. The hope stays the same: make time feel whole.</p>
+      </section>
+
+      <A11y />
+      {showNowPlaying && (
+        <div style={{position:'fixed',bottom:28,left:'50%',transform:'translateX(-50%)',zIndex:9999,display:'flex',alignItems:'center',gap:12,background:playbackMeta.theme.bg,border:'1px solid '+playbackMeta.theme.border,borderRadius:6,padding:'8px 16px',backdropFilter:'blur(12px)',maxWidth:'90vw'}}>
+          <div style={{width:6,height:6,borderRadius:'50%',background:playbackMeta.theme.accent,flexShrink:0,animation:'pulse 1.2s infinite'}} />
+          <span style={{fontSize:'9px',letterSpacing:'0.18em',textTransform:'uppercase',color:playbackMeta.theme.label,fontFamily:'Space Grotesk,sans-serif',flexShrink:0}}>Now Playing</span>
+          <span style={{fontFamily:'Cormorant Garamond,Georgia,serif',fontStyle:'italic',fontSize:'13px',color:playbackMeta.theme.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:300}}>
+            {playbackMeta.title}
+          </span>
+          <button onClick={stopAll} style={{fontSize:'9px',letterSpacing:'0.18em',textTransform:'uppercase',padding:'5px 10px',background:'transparent',color:playbackMeta.theme.accent,cursor:'pointer',fontFamily:'Space Grotesk,sans-serif',border:'1px solid '+playbackMeta.theme.border,borderRadius:3,flexShrink:0}}>■ Stop</button>
+        </div>
+      )}
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+<!-- Custom cursor -->
+<div id="cur-ring"></div>
+<script>
+(function () {
+  var ring = document.getElementById('cur-ring');
+  var body = document.body;
+
+  var mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  var rx = mx, ry = my;   // ring actual (spring-eased)
+
+  /* Selectors */
+  var INTERACT_SEL = 'a, button, [role="button"], .nav-btn, .clip-btn, .lineage-clip, .history-clip, .spotify-link, .mot-btn, .a11y-btn, .vm-toggle, .char-toggle, .map-chapter-toggle, .history-node, .nav-logo, .hero-card, .track-top, .cortex-top, .lineage-card';
+  var AMBER_SEL    = '#side-a, .hero-card.a, .track-top, .char-toggle, .spotify-link.a';
+  var BLUE_SEL     = '#side-b, .hero-card.b, .cortex-top, .lineage-card, .spotify-link.b';
+
+  /* Update body classes for hover / side coloring */
+  function classify(el) {
+    body.classList.remove('cur-hover', 'cur-a', 'cur-b');
+    if (!el) return;
+    if (el.closest(INTERACT_SEL)) {
+      body.classList.add('cur-hover');
+      if (el.closest(AMBER_SEL)) body.classList.add('cur-a');
+      else if (el.closest(BLUE_SEL)) body.classList.add('cur-b');
+    }
+  }
+
+  function loop() {
+    rx += (mx - rx) * 0.22;
+    ry += (my - ry) * 0.22;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  document.addEventListener('mousemove', function (e) {
+    mx = e.clientX; my = e.clientY;
+    body.classList.remove('cur-out');
+    classify(document.elementFromPoint(mx, my));
+  });
+
+  document.addEventListener('mouseleave', function () { body.classList.add('cur-out'); });
+  window.addEventListener('blur',         function () { body.classList.add('cur-out'); });
+  document.addEventListener('mousedown',  function ()  { body.classList.add('cur-down'); });
+  document.addEventListener('mouseup',    function ()  { body.classList.remove('cur-down'); });
+})();
+</script>
+</body>
+</html>
