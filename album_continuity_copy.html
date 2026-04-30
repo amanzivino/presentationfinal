@@ -1313,7 +1313,6 @@ function VoicemailLog({ playing, onToggle }) {
 }
 
 function MotifMatrix({ playing, onToggle }) {
-  const lastPlayRef = useRef({ key: '', url: '', motif: '', track: '' });
   const ch = (n) => n === 0 ? '·' : n === 1 ? '○' : n === 2 ? '◐' : '●';
   const staticDot = (n) => <span className={'mot-dot mot-'+n}>{ch(n)}</span>;
   const cellDot = (n, motif, track) => {
@@ -1325,14 +1324,10 @@ function MotifMatrix({ playing, onToggle }) {
     const trackSlug = CORTEX_TRACK_SLUGS[track] || clipKey(track);
     const key = 'cortex-motif-' + motifSlug + '-' + trackSlug;
     const isPlaying = playing === key;
-    const handleClick = () => {
-      lastPlayRef.current = { key, url, motif, track };
-      onToggle(key, url, fallbackUrl);
-    };
     return (
       <button
         className={'mot-dot mot-' + n + ' mot-btn' + (isPlaying ? ' mot-playing' : '')}
-        onClick={handleClick}
+        onClick={() => onToggle(key, url, fallbackUrl)}
         title={(isPlaying ? 'Pause ' : 'Play ') + motif + ' in ' + track}
         aria-label={(isPlaying ? 'Pause ' : 'Play ') + motif + ' in ' + track}
       >
@@ -1340,7 +1335,6 @@ function MotifMatrix({ playing, onToggle }) {
       </button>
     );
   };
-  const isMotifPlaying = playing && playing.startsWith('cortex-motif-');
   return (
     <div className="motif">
       <div className="motif-head">
@@ -1348,13 +1342,6 @@ function MotifMatrix({ playing, onToggle }) {
           <div className="motif-title">Motif Recurrence Matrix</div>
           <div className="motif-sub" style={{marginTop:4}}>Sound Continuity, Mapped</div>
         </div>
-        {isMotifPlaying && (
-          <div className="motif-now-playing">
-            <div className="motif-now-playing-eye">Now Playing</div>
-            <div className="motif-now-playing-name">{lastPlayRef.current.motif} · {lastPlayRef.current.track}</div>
-            <button className="motif-stop-btn" onClick={() => onToggle(lastPlayRef.current.key, lastPlayRef.current.url)}>⏹ Stop</button>
-          </div>
-        )}
       </div>
       <p className="motif-intro">This is the album's sound world at a glance. Filled circles mean a motif is central, half-circles mean it is present, and rings mean it is just brushing the edge. Read down a column to hear how strongly a track belongs to the album; read across a row to see how often one musical idea returns.</p>
       <div className="mot-cta">
@@ -1776,7 +1763,7 @@ function App() {
 
   const scrollTo = id => { const el=document.getElementById(id); if(el) window.scrollTo({top:el.offsetTop-60,behavior:'smooth'}); };
   const playbackMeta = getPlaybackMeta(playing);
-  const showNowPlaying = playing && !playing.startsWith('cortex-motif-');
+  const showNowPlaying = !!playing;
   const mapCounterLabel = pinIdx === PINS.length ? 'All 5' : (pinIdx >= 0 ? (pinIdx + 1) + ' / ' + PINS.length : '— / ' + PINS.length);
 
   return (
@@ -1947,12 +1934,12 @@ function App() {
             </div>
           ))}
         </div>
-        <MotifMatrix playing={playing} onToggle={onToggle} />
         <div style={{padding:'24px 40px 8px'}}>
           <div className="ed-intro-label">Key Tracks — open a track, or use the title for Spotify</div>
         </div>
         {CORTEX.map(t => <CortexRow key={t.num} track={t} playing={playing} onToggle={onToggle} />)}
         <SampleLineage playing={playing} onToggle={onToggle} />
+        <MotifMatrix playing={playing} onToggle={onToggle} />
       </section>
 
       <section id="bridge" style={{borderTop:'1px solid var(--rule)'}} className="bridge">
