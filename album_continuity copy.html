@@ -482,41 +482,27 @@
 
     /* ─── Custom cursor ─────────────────────────────────────────────── */
     * { cursor: none !important; }
-    #cur-dot {
-      position: fixed; top: 0; left: 0; z-index: 99999; pointer-events: none;
-      width: 5px; height: 5px; border-radius: 50%;
-      background: var(--text);
-      transform: translate(-50%, -50%);
-      transition: width .15s, height .15s, background .25s;
-      will-change: transform;
-    }
     #cur-ring {
       position: fixed; top: 0; left: 0; z-index: 99998; pointer-events: none;
-      width: 36px; height: 36px; border-radius: 50%;
+      width: 28px; height: 28px; border-radius: 50%;
       border: 1px solid var(--text);
       transform: translate(-50%, -50%);
-      opacity: 0;
+      opacity: 1;
       transition: width .35s cubic-bezier(.2,.8,.2,1),
                   height .35s cubic-bezier(.2,.8,.2,1),
                   border-color .35s, border-width .3s,
-                  opacity .25s, box-shadow .3s, border-radius .25s;
+                  box-shadow .3s, border-radius .25s, opacity .25s;
       will-change: transform;
       mix-blend-mode: difference;
     }
-    /* Ring is only visible when the cursor has context */
-    body.cur-hover #cur-ring,
-    body.cur-text  #cur-ring,
-    body.cur-a     #cur-ring,
-    body.cur-b     #cur-ring { opacity: 1; }
-    /* Hover state on interactive elements */
-    body.cur-hover #cur-dot  { width: 0; height: 0; opacity: 0; }
-    body.cur-hover #cur-ring { width: 48px; height: 48px; border-width: 1.5px; }
+    body.cur-out  #cur-ring { opacity: 0; }
+    body.cur-hover #cur-ring { width: 44px; height: 44px; border-width: 1.5px; }
     /* Side A (Kendrick) → Cortex blue ring */
     body.cur-a #cur-ring { border-color: oklch(0.65 0.14 234 / 0.85); box-shadow: 0 0 10px oklch(0.65 0.14 234 / 0.25); }
     /* Side B (Cortex) → Kendrick amber ring */
     body.cur-b #cur-ring { border-color: oklch(0.68 0.15 40 / 0.85); box-shadow: 0 0 10px oklch(0.68 0.15 40 / 0.25); }
     /* Pressed */
-    body.cur-down #cur-ring { width: 22px; height: 22px; opacity: 1; border-color: var(--text); }
+    body.cur-down #cur-ring { width: 18px; height: 18px; border-color: var(--text); }
     /* Text cursor */
     body.cur-text #cur-ring { width: 2px; height: 28px; border-radius: 1px; }
 
@@ -1992,56 +1978,73 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 </script>
 
 <!-- Custom cursor -->
-<div id="cur-dot"></div>
 <div id="cur-ring"></div>
 <script>
 (function () {
-  var dot  = document.getElementById('cur-dot');
   var ring = document.getElementById('cur-ring');
   var body = document.body;
 
   var mx = window.innerWidth / 2, my = window.innerHeight / 2;
-  var rx = mx, ry = my;
-  var raf;
+  var tx = mx, ty = my;   // ring target (magnet-biased)
+  var rx = mx, ry = my;   // ring actual (spring-eased)
 
-  /* Smooth ring follows mouse with spring-like lag */
-  function loop() {
-    rx += (mx - rx) * 0.12;
-    ry += (my - ry) * 0.12;
-    dot.style.transform  = 'translate3d(calc(' + mx + 'px - 50%), calc(' + my + 'px - 50%), 0)';
-    ring.style.transform = 'translate3d(calc(' + rx + 'px - 50%), calc(' + ry + 'px - 50%), 0)';
-    raf = requestAnimationFrame(loop);
+  /* Selectors */
+  var smallMagnets = 'a, button, [role="button"], .nav-btn, .clip-btn, .lineage-clip, .history-clip, .spotify-link, .mot-btn, .a11y-btn, .vm-toggle, .char-toggle, .map-chapter-toggle, .history-node';
+  var bigInteract  = '.hero-card, .track-top, .cortex-top, .lineage-card';
+  var textSelectors= 'p, li, .bridge-body, .bridge-coda-body, .ed-intro-text, .track-analysis, .cortex-full, .vm-text, .vm-note';
+  var amberSelectors = '#side-a, .hero-card.a, .track-top, .char-toggle, .spotify-link.a';
+  var blueSelectors  = '#side-b, .hero-card.b, .cortex-top, .lineage-card, .spotify-link.b';
+
+  /* Classify under-cursor element */
+  function classify(el) {
+    body.classList.remove('cur-hover', 'cur-a', 'cur-b', 'cur-text');
+    if (!el) return null;
+    var magnet = el.closest(smallMagnets);
+    var bigBox = !magnet && el.closest(bigInteract);
+    var inter  = magnet || bigBox;
+    if (inter) {
+      body.classList.add('cur-hover');
+      if (el.closest(amberSelectors)) body.classList.add('cur-a');
+      else if (el.closest(blueSelectors)) body.classList.add('cur-b');
+      return magnet; // only small magnets pull the cursor
+    } else if (el.closest(textSelectors)) {
+      body.classList.add('cur-text');
+    }
+    return null;
   }
-  raf = requestAnimationFrame(loop);
+
+  /* Magnetic target at the moment of last mousemove */
+  var magnet = null;
+
+  function loop() {
+    /* If hovering a magnet, bias target toward its center */
+    if (magnet) {
+      var r = magnet.getBoundingClientRect();
+      var cx = r.left + r.width / 2;
+      var cy = r.top  + r.height / 2;
+      /* Pull strength: 0.55 → cursor is mostly stuck to button center,
+         but still drifts slightly toward true mouse position */
+      tx = cx + (mx - cx) * 0.45;
+      ty = cy + (my - cy) * 0.45;
+    } else {
+      tx = mx; ty = my;
+    }
+    rx += (tx - rx) * 0.18;
+    ry += (ty - ry) * 0.18;
+    ring.style.transform = 'translate3d(' + rx + 'px, ' + ry + 'px, 0) translate(-50%, -50%)';
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
 
   document.addEventListener('mousemove', function (e) {
     mx = e.clientX; my = e.clientY;
     body.classList.remove('cur-out');
+    var el = document.elementFromPoint(mx, my);
+    magnet = classify(el);
   });
 
   document.addEventListener('mouseleave', function () { body.classList.add('cur-out'); });
-
-  /* Classify the element under cursor */
-  var interactiveSelectors = 'a, button, [role="button"], input, select, textarea, label, .hero-card, .track-top, .cortex-top, .mot-btn, .vm-toggle, .char-toggle, .map-chapter-toggle, .history-node';
-  var textSelectors        = 'p, li, .bridge-body, .bridge-coda-body, .ed-intro-text, .track-analysis, .cortex-full, .vm-text, .vm-note';
-  var amberSelectors       = '#side-a, .hero-card.a, .track-top, .char-toggle, .spotify-link.a';
-  var blueSelectors        = '#side-b, .hero-card.b, .cortex-top, .lineage-card, .spotify-link.b';
-
-  function classify(el) {
-    body.classList.remove('cur-hover', 'cur-a', 'cur-b', 'cur-text');
-    if (!el) return;
-    var isInteract = el.closest(interactiveSelectors);
-    var isText     = !isInteract && el.closest(textSelectors);
-    if (isInteract) {
-      body.classList.add('cur-hover');
-      if (el.closest(amberSelectors)) body.classList.add('cur-a');
-      else if (el.closest(blueSelectors)) body.classList.add('cur-b');
-    } else if (isText) {
-      body.classList.add('cur-text');
-    }
-  }
-
-  document.addEventListener('mouseover',  function (e) { classify(e.target); });
+  window.addEventListener('blur',         function () { body.classList.add('cur-out'); });
   document.addEventListener('mousedown',  function ()  { body.classList.add('cur-down'); });
   document.addEventListener('mouseup',    function ()  { body.classList.remove('cur-down'); });
 })();
