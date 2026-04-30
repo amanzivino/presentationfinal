@@ -259,6 +259,11 @@
     .mot-btn.mot-0:hover { transform: none; background: transparent; }
     .mot-btn.mot-playing { background: rgba(122,184,255,0.18); animation: motPulse 1.6s infinite; }
     @keyframes motPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(122,184,255,0.5); } 50% { box-shadow: 0 0 0 6px rgba(122,184,255,0); } }
+    .motif-now-playing { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+    .motif-now-playing-eye { font-size: 0.6em; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blueD); }
+    .motif-now-playing-name { font-size: 0.72em; color: var(--blue); font-style: italic; text-align: right; max-width: 220px; line-height: 1.3; }
+    .motif-stop-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 0.6em; letter-spacing: 0.18em; text-transform: uppercase; padding: 5px 11px; border: 1px solid var(--blueD); background: transparent; color: var(--blue); cursor: pointer; font-family: var(--font-u); transition: background 0.2s; margin-top: 2px; }
+    .motif-stop-btn:hover { background: rgba(122,184,255,0.1); }
     .mot-cta { display: flex; align-items: center; gap: 18px; padding: 16px 22px; margin: 6px 0 22px; border: 1px solid var(--blueD); background: linear-gradient(90deg, rgba(122,184,255,0.10), rgba(122,184,255,0.02)); }
     .mot-cta-icon { font-size: 1.5em; color: var(--blue); line-height: 1; flex-shrink: 0; animation: ctaBlink 2s infinite; }
     @keyframes ctaBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
@@ -302,6 +307,8 @@
     .history-detail.self .history-detail-label { color: var(--era-color, var(--blue)); font-style: italic; }
     .history-detail-type { font-size: 0.65em; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
     .history-detail-work { font-family: var(--font-d); font-size: 0.95em; font-style: italic; color: var(--text); margin-bottom: 10px; }
+    .history-detail-work a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255,255,255,0.25); transition: text-decoration-color 0.2s; }
+    .history-detail-work a:hover { text-decoration-color: currentColor; }
     .history-detail-body { font-size: 0.85em; line-height: 1.6; color: var(--muted); }
     .history-clip { display: inline-flex; align-items: center; gap: 8px; font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; padding: 7px 14px; border: 1px solid var(--era-dim, var(--blueD)); background: transparent; color: var(--era-color, var(--blue)); cursor: pointer; font-family: var(--font-u); transition: background 0.2s; }
     .history-clip:hover:not(:disabled) { background: var(--era-bg, rgba(122,184,255,0.1)); }
@@ -766,7 +773,8 @@ const TIMELINE = [
     ring:'oklch(0.74 0.11 86 / 0.16)',
     bg:'oklch(0.74 0.11 86 / 0.07)',
     type:'Repetition · Monophony',
-    work:'Gregorian chant',
+    work:'Psalm 91 (Refugium In Altissimis)',
+    workUrl:'https://www.youtube.com/watch?v=z96qe75LOF8',
     body:"A single melodic line returns again and again. The continuity comes from ritual: the same modes, the same shapes, the same sound carried across generations. Before harmony, repetition is the thread.",
     clipKey:'history-gregorian',
     clipUrl: BASE + 'history-gregorian.mp3',
@@ -780,7 +788,8 @@ const TIMELINE = [
     ring:'oklch(0.68 0.13 286 / 0.16)',
     bg:'oklch(0.68 0.13 286 / 0.07)',
     type:'Overlapping Lines',
-    work:'Notre Dame school · Organum',
+    work:'Pérotin le Grand — Viderunt omnes · David Munrow',
+    workUrl:'https://www.youtube.com/watch?v=KA6oq_UYbyA',
     body:"Léonin and Pérotin build upward from chant, holding one voice steady while others move above it. Now the piece stays together because different lines share the same space. Continuity becomes something you can hear vertically.",
     clipKey:'history-organum',
     clipUrl: BASE + 'history-organum.mp3',
@@ -808,7 +817,8 @@ const TIMELINE = [
     ring:'oklch(0.72 0.12 195 / 0.16)',
     bg:'oklch(0.72 0.12 195 / 0.07)',
     type:'Keyboard · 24 Preludes & Fugues',
-    work:'Bach · The Well-Tempered Clavier, Book I',
+    work:'Bach — Prelude & Fugue No. 2, WTC Book I · Paul Barton',
+    workUrl:'https://www.youtube.com/watch?v=HB8-w5CvMls',
     body:"Bach gives every major and minor key its own prelude and fugue. Each piece stands alone, but together they feel like a complete map. It is not an album, but it thinks like one: many parts held inside one larger idea.",
     clipKey:'history-bach',
     clipUrl: BASE + 'history-bach.mp3',
@@ -822,7 +832,8 @@ const TIMELINE = [
     ring:'oklch(0.72 0.14 145 / 0.16)',
     bg:'oklch(0.72 0.14 145 / 0.07)',
     type:'Thematic Development',
-    work:'Mozart · piano sonatas',
+    work:'Lang Lang — Mozart: Sonata in C, K. 545, Allegro',
+    workUrl:'https://www.youtube.com/watch?v=4xeAsc6m35w',
     body:"A theme appears, changes shape, moves keys, and comes back altered. The listener is asked to remember where it began. Continuity is not just return anymore; it is change that still feels connected.",
     clipKey:'history-mozart',
     clipUrl: BASE + 'history-mozart.mp3',
@@ -836,7 +847,8 @@ const TIMELINE = [
     ring:'oklch(0.65 0.14 234 / 0.18)',
     bg:'oklch(0.65 0.14 234 / 0.08)',
     type:'Motifs · Palette',
-    work:'Cortex · Troupeau Bleu',
+    work:'Cortex — Troupeau Bleu',
+    workUrl:'https://www.youtube.com/watch?v=0nzidMdZDaM',
     body:"The LP gives popular music a new kind of canvas: thirty or forty minutes that can be shaped as one experience. Cortex use that space by returning to the same voice, keys, drums, bass, and mood until the album feels like one continuous room.",
     clipKey:'cortex-troupeau-bleu',
     clipUrl: BASE + 'cortex-troupeau-bleu.mp3',
@@ -1297,6 +1309,7 @@ function VoicemailLog({ playing, onToggle }) {
 }
 
 function MotifMatrix({ playing, onToggle }) {
+  const lastPlayRef = useRef({ key: '', url: '', motif: '', track: '' });
   const ch = (n) => n === 0 ? '·' : n === 1 ? '○' : n === 2 ? '◐' : '●';
   const staticDot = (n) => <span className={'mot-dot mot-'+n}>{ch(n)}</span>;
   const cellDot = (n, motif, track) => {
@@ -1308,10 +1321,14 @@ function MotifMatrix({ playing, onToggle }) {
     const trackSlug = CORTEX_TRACK_SLUGS[track] || clipKey(track);
     const key = 'cortex-motif-' + motifSlug + '-' + trackSlug;
     const isPlaying = playing === key;
+    const handleClick = () => {
+      lastPlayRef.current = { key, url, motif, track };
+      onToggle(key, url, fallbackUrl);
+    };
     return (
       <button
         className={'mot-dot mot-' + n + ' mot-btn' + (isPlaying ? ' mot-playing' : '')}
-        onClick={() => onToggle(key, url, fallbackUrl)}
+        onClick={handleClick}
         title={(isPlaying ? 'Pause ' : 'Play ') + motif + ' in ' + track}
         aria-label={(isPlaying ? 'Pause ' : 'Play ') + motif + ' in ' + track}
       >
@@ -1319,6 +1336,7 @@ function MotifMatrix({ playing, onToggle }) {
       </button>
     );
   };
+  const isMotifPlaying = playing && playing.startsWith('cortex-motif-');
   return (
     <div className="motif">
       <div className="motif-head">
@@ -1326,6 +1344,13 @@ function MotifMatrix({ playing, onToggle }) {
           <div className="motif-title">Motif Recurrence Matrix</div>
           <div className="motif-sub" style={{marginTop:4}}>Sound Continuity, Mapped</div>
         </div>
+        {isMotifPlaying && (
+          <div className="motif-now-playing">
+            <div className="motif-now-playing-eye">Now Playing</div>
+            <div className="motif-now-playing-name">{lastPlayRef.current.motif} · {lastPlayRef.current.track}</div>
+            <button className="motif-stop-btn" onClick={() => onToggle(lastPlayRef.current.key, lastPlayRef.current.url)}>⏹ Stop</button>
+          </div>
+        )}
       </div>
       <p className="motif-intro">This is the album's sound world at a glance. Filled circles mean a motif is central, half-circles mean it is present, and rings mean it is just brushing the edge. Read down a column to hear how strongly a track belongs to the album; read across a row to see how often one musical idea returns.</p>
       <div className="mot-cta">
@@ -1439,7 +1464,11 @@ function HistoryTimeline({ playing, onToggle }) {
             <div className="history-detail-era">{era.era}</div>
             <div className="history-detail-label">{era.label}</div>
             <div className="history-detail-type">{era.type}</div>
-            <div className="history-detail-work">{era.work}</div>
+            <div className="history-detail-work">
+                {era.workUrl
+                  ? <a href={era.workUrl} target="_blank" rel="noopener">{era.work} ↗</a>
+                  : era.work}
+              </div>
             <button
               className={'history-clip' + (isPlaying ? ' playing' : '') + (isSelf ? ' self' : '')}
               onClick={() => onToggle(era.clipKey, era.clipUrl)}
