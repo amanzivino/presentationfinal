@@ -1763,30 +1763,31 @@ function App() {
 
       <HistoryTimeline playing={playing} onToggle={onToggle} />
 
+        <section className="albums-intro">
      <section className="albums-intro">
   <div className="albums-intro-eye">The Two Records</div>
-  <div className="albums-intro-title">Two albums, fifty years apart, trying to solve the same problem.</div>
+  <div className="sec-title a" style={{ whiteSpace: 'nowrap' }}>
+  good kid, m.A.A.d city
+</div>
   <div className="hero-cards">
-    <div className="hero-card a" onClick={() => scrollTo('side-a')}>
-      <div className="hero-card-art"><img src={ART_GKMC} alt="good kid, m.A.A.d city album cover" loading="lazy" /></div>
-      <div className="hero-card-body">
-        <div className="hero-card-eye">Side A · Narrative Continuity</div>
-        <a className="hero-card-title" href="https://open.spotify.com/album/6PBZN8cbwkqm1ERj2BGXJ1" target="_blank" rel="noopener" onClick={e=>e.stopPropagation()}>good kid, m.A.A.d city</a>
-        <div className="hero-card-sub">Kendrick Lamar · 2012 · Compton, CA</div>
-      </div>
-      <div className="hero-card-arrow">↓</div>
-    </div>
-    <div className="hero-card b" onClick={() => scrollTo('side-b')}>
-      <div className="hero-card-art"><img src={ART_TROUPEAU} alt="Troupeau Bleu album cover" loading="lazy" /></div>
-      <div className="hero-card-body">
-        <div className="hero-card-eye">Side B · Sonic Continuity</div>
-        <a className="hero-card-title" href="https://open.spotify.com/album/74DOWHisu2jlFvPid9YTGB" target="_blank" rel="noopener" onClick={e=>e.stopPropagation()}>Troupeau Bleu</a>
-        <div className="hero-card-sub">Cortex · 1975 · Paris, France</div>
-      </div>
-      <div className="hero-card-arrow">↓</div>
+@@ -1787,20 +1787,22 @@
     </div>
   </div>
 </section>
+      <section id="side-a">
+        <div className="sec-head">
+          <div className="sec-title a">good kid,<br />m.A.A.d city</div>
+          <div className="sec-right">
+            <span className="sec-label">Side A · Story Continuity</span>
+            <span className="sec-meta">Kendrick Lamar · Compton, CA · 2012</span>
+            <a className="spotify-link a" href="https://open.spotify.com/album/6PBZN8cbwkqm1ERj2BGXJ1" target="_blank" rel="noopener">♫ Full Album</a>
+          </div>
+        </div>
+        <div className="editorial">
+          <div className="ed-intro">
+            <div className="ed-intro-label">Track by Track — Chain Reaction</div>
+            <div className="ed-intro-text">Continuity here is causal: each track happens because of the one before it. The album follows one day in Compton, where one choice keeps leading to the next. Open a track to see how the chain moves.</div>
+          </div>
 <section id="side-a">
   <div className="sec-head">
     <div className="sec-title a">good kid, m.A.A.d city</div>
@@ -1803,6 +1804,7 @@ function App() {
     </div>
   </div>
 </section>
+
 
           <button className="char-toggle" onClick={() => setCharOpen(o=>!o)}>
             <div>
