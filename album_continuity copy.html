@@ -1989,49 +1989,73 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   var rx = mx, ry = my;   // ring actual (spring-eased)
 
   /* Selectors */
-  var smallMagnets = 'a, button, [role="button"], .nav-btn, .clip-btn, .lineage-clip, .history-clip, .spotify-link, .mot-btn, .a11y-btn, .vm-toggle, .char-toggle, .map-chapter-toggle, .history-node';
-  var bigInteract  = '.hero-card, .track-top, .cortex-top, .lineage-card';
-  var textSelectors= 'p, li, .bridge-body, .bridge-coda-body, .ed-intro-text, .track-analysis, .cortex-full, .vm-text, .vm-note';
-  var amberSelectors = '#side-a, .hero-card.a, .track-top, .char-toggle, .spotify-link.a';
-  var blueSelectors  = '#side-b, .hero-card.b, .cortex-top, .lineage-card, .spotify-link.b';
+  var MAGNET_SEL  = 'a, button, [role="button"], .nav-btn, .clip-btn, .lineage-clip, .history-clip, .spotify-link, .mot-btn, .a11y-btn, .vm-toggle, .char-toggle, .map-chapter-toggle, .history-node, .nav-logo';
+  var BIG_SEL     = '.hero-card, .track-top, .cortex-top, .lineage-card';
+  var TEXT_SEL    = 'p, li, .bridge-body, .bridge-coda-body, .ed-intro-text, .track-analysis, .cortex-full, .vm-text, .vm-note';
+  var AMBER_SEL   = '#side-a, .hero-card.a, .track-top, .char-toggle, .spotify-link.a';
+  var BLUE_SEL    = '#side-b, .hero-card.b, .cortex-top, .lineage-card, .spotify-link.b';
 
-  /* Classify under-cursor element */
-  function classify(el) {
-    body.classList.remove('cur-hover', 'cur-a', 'cur-b', 'cur-text');
-    if (!el) return null;
-    var magnet = el.closest(smallMagnets);
-    var bigBox = !magnet && el.closest(bigInteract);
-    var inter  = magnet || bigBox;
-    if (inter) {
-      body.classList.add('cur-hover');
-      if (el.closest(amberSelectors)) body.classList.add('cur-a');
-      else if (el.closest(blueSelectors)) body.classList.add('cur-b');
-      return magnet; // only small magnets pull the cursor
-    } else if (el.closest(textSelectors)) {
-      body.classList.add('cur-text');
+  var REACH = 70; // px of magnetic attraction past element edge
+
+  /* Cache magnet list — refresh on user interaction or layout changes */
+  var magnetCache = [];
+  function refreshCache() { magnetCache = document.querySelectorAll(MAGNET_SEL); }
+  refreshCache();
+  window.addEventListener('resize', refreshCache);
+  /* Re-query every ~500 ms to pick up dynamic React-rendered nodes */
+  setInterval(refreshCache, 500);
+
+  /* Find the closest magnetic target within REACH (proximity-based) */
+  function findMagnet() {
+    var best = null, bestD = REACH;
+    var els = magnetCache;
+    for (var i = 0; i < els.length; i++) {
+      var r = els[i].getBoundingClientRect();
+      if (!r.width || !r.height) continue;
+      if (r.bottom < -50 || r.top > window.innerHeight + 50) continue;
+      // Distance from mouse to element's hit-box edge (0 = inside)
+      var dx = Math.max(r.left - mx, 0, mx - r.right);
+      var dy = Math.max(r.top  - my, 0, my - r.bottom);
+      var d = Math.hypot(dx, dy);
+      if (d <= bestD) { best = els[i]; bestD = d; }
     }
-    return null;
+    return { el: best, dist: bestD };
   }
 
-  /* Magnetic target at the moment of last mousemove */
-  var magnet = null;
+  /* Update body classes for hover/text/side coloring */
+  function classify(el) {
+    body.classList.remove('cur-hover', 'cur-a', 'cur-b', 'cur-text');
+    if (!el) return;
+    var inter = el.closest(MAGNET_SEL) || el.closest(BIG_SEL);
+    if (inter) {
+      body.classList.add('cur-hover');
+      if (el.closest(AMBER_SEL)) body.classList.add('cur-a');
+      else if (el.closest(BLUE_SEL)) body.classList.add('cur-b');
+    } else if (el.closest(TEXT_SEL)) {
+      body.classList.add('cur-text');
+    }
+  }
 
   function loop() {
-    /* If hovering a magnet, bias target toward its center */
-    if (magnet) {
-      var r = magnet.getBoundingClientRect();
+    var m = findMagnet();
+    if (m.el) {
+      var r = m.el.getBoundingClientRect();
       var cx = r.left + r.width / 2;
       var cy = r.top  + r.height / 2;
-      /* Pull strength: 0.55 → cursor is mostly stuck to button center,
-         but still drifts slightly toward true mouse position */
-      tx = cx + (mx - cx) * 0.45;
-      ty = cy + (my - cy) * 0.45;
+      // Closer = stronger pull: at distance 0, pull = 0.7; at REACH, pull = 0
+      var t = 1 - (m.dist / REACH);                // 0..1
+      var pull = 0.7 * t * t;                      // ease-in for soft entry
+      tx = mx + (cx - mx) * pull;
+      ty = my + (cy - my) * pull;
+      // Add hover class when close enough that the ring has visibly snapped
+      if (t > 0.55) body.classList.add('cur-hover');
     } else {
       tx = mx; ty = my;
     }
-    rx += (tx - rx) * 0.18;
-    ry += (ty - ry) * 0.18;
-    ring.style.transform = 'translate3d(' + rx + 'px, ' + ry + 'px, 0) translate(-50%, -50%)';
+    rx += (tx - rx) * 0.22;
+    ry += (ty - ry) * 0.22;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
@@ -2039,8 +2063,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   document.addEventListener('mousemove', function (e) {
     mx = e.clientX; my = e.clientY;
     body.classList.remove('cur-out');
-    var el = document.elementFromPoint(mx, my);
-    magnet = classify(el);
+    classify(document.elementFromPoint(mx, my));
   });
 
   document.addEventListener('mouseleave', function () { body.classList.add('cur-out'); });
