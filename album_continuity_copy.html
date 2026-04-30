@@ -60,7 +60,10 @@
     .hero-card-title:hover { opacity: 0.8; text-decoration-color: currentColor; }
     .hero-card.a .hero-card-title { color: var(--amber); }
     .hero-card.b .hero-card-title { color: var(--blue); font-style: italic; }
-    .hero-card-sub { font-size: 0.7em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+    .hero-card-sub { font-size: 0.7em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+    .hero-card-desc { font-size: 0.86em; line-height: 1.55; color: var(--muted); margin-bottom: 14px; padding-right: 36px; }
+    .hero-card.a .hero-card-desc strong { color: var(--amber); font-weight: 500; font-style: italic; }
+    .hero-card.b .hero-card-desc strong { color: var(--blue); font-weight: 500; font-style: italic; }
     .hero-card-arrow { position: absolute; bottom: 26px; right: 32px; font-size: 1em; color: var(--faint); }
 
     .sec-head { padding: 72px 40px 32px; border-bottom: 1px solid var(--rule); display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
@@ -1803,6 +1806,7 @@ function App() {
               <div className="hero-card-eye">Side A · Story Continuity</div>
               <a className="hero-card-title" href="https://open.spotify.com/album/6PBZN8cbwkqm1ERj2BGXJ1" target="_blank" rel="noopener" onClick={e=>e.stopPropagation()}>good&nbsp;kid,&nbsp;m.A.A.d&nbsp;city</a>
               <div className="hero-card-sub">Kendrick Lamar · 2012 · Compton, CA</div>
+              <p className="hero-card-desc">A single day in Compton, told as one continuous story. <strong>Continuity comes from narrative</strong> — missed calls, a borrowed van, and a setup that reaches across every track on the record.</p>
             </div>
             <div className="hero-card-arrow">↓</div>
           </div>
@@ -1812,6 +1816,7 @@ function App() {
               <div className="hero-card-eye">Side B · Sound Continuity</div>
               <a className="hero-card-title" href="https://open.spotify.com/album/74DOWHisu2jlFvPid9YTGB" target="_blank" rel="noopener" onClick={e=>e.stopPropagation()}>Troupeau Bleu</a>
               <div className="hero-card-sub">Cortex · 1975 · Paris, France</div>
+              <p className="hero-card-desc">Jazz-funk built around recurring motifs. <strong>Continuity comes from sound</strong> — the same keys, bass, drums, and voice keep returning until the album feels like one continuous room.</p>
             </div>
             <div className="hero-card-arrow">↓</div>
           </div>
