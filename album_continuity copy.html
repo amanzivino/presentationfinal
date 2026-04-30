@@ -145,27 +145,27 @@
     .cortex-badge { font-size: 0.6em; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; border: 1px solid var(--blueD); color: var(--blue); white-space: nowrap; align-self: start; margin-top: 4px; }
     .cortex-expand { padding: 0 0 24px 84px; font-size: 0.875em; line-height: 1.75; color: var(--muted); }
 
-    .bridge { padding: 96px 40px 80px; }
-    .bridge-kicker { font-size: 0.7em; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
-    .bridge-title { font-family: var(--font-d); font-size: clamp(38px,7vw,92px); font-weight: 700; line-height: 0.9; margin-bottom: 36px; }
-    .bridge-body { font-size: 1em; line-height: 1.82; color: var(--muted); max-width: 600px; margin-bottom: 64px; }
-    .bridge-cols { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 48px; margin-bottom: 60px; }
+    .bridge { padding: 48px 40px 40px; min-height: 100vh; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+    .bridge-kicker { font-size: 0.7em; letter-spacing: 0.24em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .bridge-title { font-family: var(--font-d); font-size: clamp(30px,4.6vw,58px); font-weight: 700; line-height: 0.95; margin-bottom: 18px; }
+    .bridge-body { font-size: 0.92em; line-height: 1.6; color: var(--muted); max-width: 640px; margin-bottom: 28px; }
+    .bridge-cols { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 40px; margin-bottom: 24px; }
     .bridge-divider { background: var(--rule); }
-    .bridge-col-eye { font-size: 0.65em; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 14px; }
+    .bridge-col-eye { font-size: 0.65em; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 8px; }
     .b-col-a .bridge-col-eye { color: var(--amberD); }
     .b-col-b .bridge-col-eye { color: var(--blueD); }
-    .bridge-col-title { font-family: var(--font-d); font-size: 1.5em; font-weight: 600; margin-bottom: 5px; }
+    .bridge-col-title { font-family: var(--font-d); font-size: 1.3em; font-weight: 600; margin-bottom: 4px; }
     .b-col-a .bridge-col-title { color: var(--amber); }
     .b-col-b .bridge-col-title { color: var(--blue); font-style: italic; }
-    .bridge-col-mode { font-size: 0.7em; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 26px; }
-    .bridge-el { padding: 14px 0; border-bottom: 1px solid var(--rule); }
-    .bridge-el-lbl { font-size: 0.65em; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 6px; }
+    .bridge-col-mode { font-size: 0.7em; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+    .bridge-el { padding: 8px 0; border-bottom: 1px solid var(--rule); }
+    .bridge-el-lbl { font-size: 0.62em; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 3px; }
     .b-col-a .bridge-el-lbl { color: var(--amberD); }
     .b-col-b .bridge-el-lbl { color: var(--blueD); }
-    .bridge-el-desc { font-size: 0.875em; line-height: 1.7; color: var(--muted); }
-    .bridge-coda { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 44px 0; margin-bottom: 44px; }
-    .bridge-coda-title { font-family: var(--font-d); font-size: 1.5em; font-weight: 600; margin-bottom: 14px; }
-    .bridge-coda-body { font-size: 0.9em; line-height: 1.82; color: var(--muted); max-width: 580px; }
+    .bridge-el-desc { font-size: 0.82em; line-height: 1.5; color: var(--muted); }
+    .bridge-coda { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 20px 0; margin-bottom: 16px; }
+    .bridge-coda-title { font-family: var(--font-d); font-size: 1.25em; font-weight: 600; margin-bottom: 8px; }
+    .bridge-coda-body { font-size: 0.88em; line-height: 1.6; color: var(--muted); max-width: 640px; }
 
     .a11y-btn { position: fixed; bottom: 28px; right: 28px; z-index: 9999; width: 44px; height: 44px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--faint); font-family: var(--font-u); font-size: 0.8125em; font-weight: 600; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .a11y-btn:hover { border-color: var(--muted); color: var(--text); }
