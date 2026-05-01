@@ -111,6 +111,12 @@
     .track-badge { font-size: 0.6em; letter-spacing: 0.2em; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--amberD); color: var(--amber); white-space: nowrap; margin-top: 5px; }
     .track-toggle { font-size: 0.875em; color: var(--faint); align-self: center; flex-shrink: 0; }
     .track-expand { padding: 0 0 28px 64px; }
+    .track-vm { border: 1px solid var(--amberD); background: rgba(192,120,48,0.06); padding: 14px 18px; margin-bottom: 18px; }
+    .track-vm-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+    .track-vm-dir { font-size: 0.6em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--amberD); border: 1px solid var(--amberD); padding: 2px 7px; }
+    .track-vm-from { font-family: var(--font-d); font-size: 1em; color: var(--amber); font-weight: 600; }
+    .track-vm-time { font-family: var(--font-m); font-size: 0.72em; color: var(--muted); margin-left: auto; letter-spacing: 0.08em; }
+    .track-vm-text { font-family: var(--font-d); font-size: 0.92em; font-style: italic; color: oklch(0.78 0.06 50); line-height: 1.55; margin: 0 0 10px; }
     .clip-btn { font-size: 0.65em; letter-spacing: 0.14em; text-transform: uppercase; padding: 6px 11px; border: 1px solid var(--rule); background: transparent; color: var(--muted); cursor: pointer; font-family: var(--font-u); margin-bottom: 12px; }
     .clip-btn:hover:not(:disabled) { border-color: var(--amberD); color: var(--amber); }
     .clip-btn.playing { border-color: var(--amberD); color: var(--amber); }
@@ -1089,6 +1095,10 @@ function TrackRow({ track, badge, playing, onToggle }) {
   const key = clipKey(track.name);
   const trackUrl = CLIPS[key] || '';
   const excerpts = String(track.lyrics).split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+  const vm = VOICEMAILS.find(v => v.track === track.num);
+  const vmKey = vm ? `vm-${vm.num}` : '';
+  const vmUrl = vm && trackUrl ? deriveClipUrlFromBase(trackUrl, `voicemail-${vm.num}-${clipKey(vm.from)}`) : '';
+  const isVmPlaying = vmKey && playing === vmKey;
   return (
     <div className="track-item">
       <div className="track-top" onClick={() => setOpen(o => !o)}>
@@ -1104,6 +1114,23 @@ function TrackRow({ track, badge, playing, onToggle }) {
       </div>
       {open && (
         <div className="track-expand">
+          {vm && vmUrl && (
+            <div className="track-vm">
+              <div className="track-vm-head">
+                <span className="track-vm-dir">{vm.dir}</span>
+                <span className="track-vm-from">{vm.from}</span>
+                <span className="track-vm-time">{vm.time}</span>
+              </div>
+              <p className="track-vm-text">"{vm.text}"</p>
+              <button
+                className={'clip-btn'+(isVmPlaying?' playing':'')}
+                onClick={() => onToggle(vmKey, vmUrl)}
+                style={{marginBottom:0}}
+              >
+                {isVmPlaying ? 'Pause ' + vm.dir : 'Play ' + vm.dir}
+              </button>
+            </div>
+          )}
           {excerpts.map((excerpt, idx) => {
             const excerptKey = `${key}-excerpt-${idx}`;
             const isPlaying = playing === excerptKey;
