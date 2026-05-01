@@ -638,7 +638,7 @@ const SAMPLE_CLIPS = {
 const STAGES = [
   { id:'lust', label:'LUST', tracks:[
     { num:1, name:"Sherane a.k.a. Master Splinter's Daughter", url:'https://open.spotify.com/track/7zdORPbuIBkZHCJXl9J2e5', short:"K.Dot takes his mom's van down Rosecrans to see a girl from a party. He knows it could get messy. He still goes.", lyrics:"Family history of gangbangin' did make me skeptical\nBut not enough to stop me from gettin' a nut\n\nSo now I'm down Rosecrans in a Caravan\n\nI pulled up, a smile on my face, and then I see\nTwo niggas, two black hoodies, I froze as my phone rang", analysis:"The album begins with one teenage choice: go see Sherane. When K.Dot pulls up and sees two strangers in black hoodies, his phone rings. His mom is calling. He does not answer. That missed call becomes the first thread the whole record keeps tugging on." },
-    { num:2, name:"Bitch, Don't Kill My Vibe", url:'https://open.spotify.com/track/4Pwjz3DfvfQWV0rO2V8jyh', short:"Before the night gets louder, K.Dot tries to hold onto himself.", lyrics:"I am a sinner who's probably gonna sin again\nLord forgive me\n\nYou can see that my city found me\nThen put me on stages", analysis:"This feels like a breath before the story speeds up. K.Dot knows himself well enough to see the danger coming, but not well enough to stay out of it." },
+    { num:2, name:"Bitch, Don't Kill My Vibe", url:'https://open.spotify.com/track/4Pwjz3DfvfQWV0rO2V8jyh', short:"Before the night gets louder, K.Dot tries to hold onto himself.", lyrics:"I am a sinner who's probably gonna sin again\nLord forgive me\n\nYou can see that my city found me\nThen put me on stages\n\n[Skit]\nK-Dot, get in the car, nigga\nCome on, we finna roll out\nNigga, I got a pack of Blacks and a beat CD\nGet your freestyles ready", analysis:"This feels like a breath before the story speeds up. K.Dot knows himself well enough to see the danger coming, but not well enough to stay out of it." },
     { num:3, name:"Backseat Freestyle", url:'https://open.spotify.com/track/6fAyRZ0GHuuvSOEIOwi58N', short:"A burst of teenage fantasy: money, power, sex, Compton.", lyrics:"All my life I want money and power\nRespect my mind or die from lead shower\n\nC-O-M-P-T-O-N, my city, mobbin' in the street", analysis:"This is not wise Kendrick looking back. This is the younger version talking big from the backseat. The point is how real that fantasy feels before the consequences arrive." },
   ]},
   { id:'crime', label:'CRIME', tracks:[
@@ -670,6 +670,17 @@ function getTrackClipUrlByNum(trackNum) {
     return CLIPS[key] || '';
   }
   return '';
+}
+
+function getVoicemailUrls(vm, baseClipUrl) {
+  if (!vm || !baseClipUrl) return [];
+  if (Array.isArray(vm.clips) && vm.clips.length) {
+    return vm.clips
+      .map(suffix => deriveClipUrlFromBase(baseClipUrl, suffix))
+      .filter(Boolean);
+  }
+  const fromSlug = clipKey(vm.from);
+  return [deriveClipUrlFromBase(baseClipUrl, `voicemail-${vm.num}-${fromSlug}`)].filter(Boolean);
 }
 
 const CORTEX = [
@@ -722,16 +733,16 @@ const FRAMEWORK = {
 
 // The day, in calls — voicemails, skits, and conversations that knit the songs together.
 const VOICEMAILS = [
-  { num:1, time:'4:48 PM',  from:'Mom',                dir:'Voicemail',  track:1,  song:"Sherane",
+  { num:1, time:'4:48 PM',  from:'Mom',                dir:'Voicemail',  track:1,  song:"Sherane", clips:['voicemail-1-mom'],
     text:"Where's the van? I gotta pick up your auntie. Call me back, baby.",
     note:"K.Dot is outside Sherane's when the danger becomes real. The phone rings, and he lets it go." },
-  { num:2, time:'5:32 PM',  from:'The Homies',         dir:'Skit',       track:4,  song:"The Art of Peer Pressure",
-    text:"Drop K.Dot off at his mama's van at the park — he tryna fuck on Sherane tonight.",
-    note:"Even after the robbery, the night keeps bending back toward Sherane." },
-  { num:3, time:'6:11 PM',  from:'Mom',                dir:'Voicemail',  track:5,  song:"Money Trees",
+  { num:5, time:'5:07 PM',  from:'The Homies',         dir:'Skit',       track:2,  song:"Bitch, Don't Kill My Vibe", clips:['voicemail-5-the-homies','voicemail-2-the-homies'],
+    text:"K-Dot, get in the car, nigga. Come on, we finna roll out. Nigga, I got a pack of Blacks and a beat CD. Get your freestyles ready.",
+    note:"This skit flips the mood from introspection to motion — the call to ride sets up Backseat Freestyle's teenage rush." },
+  { num:3, time:'6:11 PM',  from:'Mom',                dir:'Voicemail',  track:5,  song:"Money Trees", clips:['voicemail-3-mom','voicemail-4-mom'],
     text:"Boy, where you at? Bring me back a Domino's pizza when you come.",
     note:"Another missed call, still ordinary and loving, which makes the night feel even more dangerous." },
-  { num:4, time:'7:24 PM',  from:"Sherane's crew",     dir:'In person',  track:6,  song:"Poetic Justice",
+  { num:4, time:'7:24 PM',  from:"Sherane's crew",     dir:'In person',  track:6,  song:"Poetic Justice", clips:['voicemail-4-sherane-s-crew','voicemail-5-sherane-s-crew','voicemail-4-sheranes-crew'],
     text:"Ay, you out here for Sherane, homie? Tell me where you from — if you don't, it's a wrap.",
     note:"The drive to Sherane lands here. What looked like romance becomes the setup." },
   { num:6, time:'9:47 PM',  from:'A friend',           dir:'Skit',       track:9,  song:"Swimming Pools",
@@ -1097,7 +1108,8 @@ function TrackRow({ track, badge, playing, onToggle }) {
   const excerpts = String(track.lyrics).split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
   const vm = VOICEMAILS.find(v => v.track === track.num);
   const vmKey = vm ? `vm-${vm.num}` : '';
-  const vmUrl = vm && trackUrl ? deriveClipUrlFromBase(trackUrl, `voicemail-${vm.num}-${clipKey(vm.from)}`) : '';
+  const vmUrls = getVoicemailUrls(vm, trackUrl);
+  const vmUrl = vmUrls[0] || '';
   const isVmPlaying = vmKey && playing === vmKey;
   return (
     <div className="track-item">
@@ -1124,7 +1136,7 @@ function TrackRow({ track, badge, playing, onToggle }) {
               <p className="track-vm-text">"{vm.text}"</p>
               <button
                 className={'clip-btn'+(isVmPlaying?' playing':'')}
-                onClick={() => onToggle(vmKey, vmUrl)}
+                onClick={() => onToggle(vmKey, vmUrl, vmUrls.slice(1))}
                 style={{marginBottom:0}}
               >
                 {isVmPlaying ? 'Pause ' + vm.dir : 'Play ' + vm.dir}
@@ -1307,8 +1319,8 @@ function VoicemailLog({ playing, onToggle }) {
             {VOICEMAILS.map(v => {
               const vmKey = `vm-${v.num}`;
               const baseClipUrl = getTrackClipUrlByNum(v.track);
-              const fromSlug = clipKey(v.from);
-              const vmUrl = baseClipUrl ? deriveClipUrlFromBase(baseClipUrl, `voicemail-${v.num}-${fromSlug}`) : '';
+              const vmUrls = getVoicemailUrls(v, baseClipUrl);
+              const vmUrl = vmUrls[0] || '';
               const isPlaying = playing === vmKey;
               return (
                 <div key={v.num} className="vm-row">
@@ -1317,7 +1329,7 @@ function VoicemailLog({ playing, onToggle }) {
                     <div className="vm-dir">{v.dir}</div>
                     <button
                       className={'clip-btn'+(isPlaying?' playing':'')}
-                      onClick={() => onToggle(vmKey, vmUrl)}
+                      onClick={() => onToggle(vmKey, vmUrl, vmUrls.slice(1))}
                       disabled={!vmUrl}
                       style={{ width: '100%' }}
                     >
@@ -1627,7 +1639,8 @@ function App() {
     if (!url || !audioRef.current) return;
     const a = audioRef.current;
     if (playingRef.current === key) { a.onerror = null; a.pause(); setPlayingSync(''); return; }
-    const sources = [url, fallbackUrl].filter((src, i, arr) => src && arr.indexOf(src) === i);
+    const fallbackList = Array.isArray(fallbackUrl) ? fallbackUrl : [fallbackUrl];
+    const sources = [url, ...fallbackList].filter((src, i, arr) => src && arr.indexOf(src) === i);
     let sourceIdx = 0;
     const playSource = async () => {
       const src = sources[sourceIdx];
