@@ -1648,7 +1648,8 @@ function App() {
     if (!url || !audioRef.current) return;
     const a = audioRef.current;
     if (playingRef.current === key) { a.onerror = null; a.pause(); setPlayingSync(''); return; }
-    const sources = [url, fallbackUrl].filter((src, i, arr) => src && arr.indexOf(src) === i);
+    const fallbackList = Array.isArray(fallbackUrl) ? fallbackUrl : [fallbackUrl];
+    const sources = [url, ...fallbackList].filter((src, i, arr) => src && arr.indexOf(src) === i);
     let sourceIdx = 0;
     const playSource = async () => {
       const src = sources[sourceIdx];
